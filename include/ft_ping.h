@@ -7,6 +7,8 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <netinet/ip_icmp.h>
+#include <sys/time.h>
+#include <arpa/inet.h>
 #include <stdbool.h>
 #include <errno.h>
 
@@ -38,6 +40,38 @@ typedef struct s_args
     char *host;
 } t_args;
 
+typedef struct s_packet_stats
+{
+    int num_received;
+    u_int8_t ttl;
+    double rtt;
+    int received_size;
+    struct timeval end_time;
+} t_packet_stats;
+
+typedef struct s_packet
+{
+    struct msghdr msg;
+    struct cmsghdr *cmsg;
+    char packet[MAX_PACKET_SIZE];
+    int packet_size;
+} t_packet;
+
+/* Error codes */
+enum e_error
+{
+    ERROR_SOCKET_OPEN = 1,
+    ERROR_GET_HOST_BY_NAME_SOCKET_OPEN,
+    ERROR_SENDTO,
+    ERROR_INET_PTON,
+    ERROR_RESOLVING_HOST,
+    ERROR_RECVFROM,
+    NB_OF_ERROR_CODES /* Always keep last */
+};
+
+// errors
+void ft_perror(const char *message);
+
 // args
 void parse_args(int argc, char *argv[], t_args *args);
 void set_args_structure();
@@ -47,7 +81,8 @@ unsigned short ft_icmp_checksum(void *data, int len);
 struct hostent *ft_gethostbyname(const char *name);
 
 // utils
-void ft_perror(const char *message);
 void ft_bzero(void *s, size_t n);
+void *ft_memset(void *s, int c, size_t n);
+void *ft_memcpy(void *dest, const void *src, size_t n);
 
 #endif
