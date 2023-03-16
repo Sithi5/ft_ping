@@ -53,6 +53,12 @@ ICMP stands for Internet Control Message Protocol. It is a protocol that is used
 
 In the context of this `ft_ping` program in C, the ICMP protocol is used to send "ping" packets to the destination host and to receive ICMP "pong" packets back in response. The program sends an ICMP ECHO request packet to the destination host and expects an ICMP ECHO reply packet to be sent back. The time it takes to send and receive these packets is used to calculate the latency of the network connection.
 
+## TTL (Time To Live)
+
+The TTL (Time To Live) is a value in the IP (Internet Protocol) header of a packet that specifies the maximum number of hops (routers) that the packet can traverse before it is discarded. Each router that the packet passes through decrements the TTL value by 1, and if the TTL reaches 0, the packet is discarded and an ICMP error message is sent back to the sender.
+
+The TTL value is used to prevent packets from circulating indefinitely in the network, and to ensure that packets are delivered efficiently and reliably to their destination. The typical TTL value for a packet is 64, but it can be adjusted based on the network topology and the characteristics of the traffic.
+
 ## Resources
 
 [socket man](https://man7.org/linux/man-pages/man2/socket.2.html)
