@@ -6,6 +6,14 @@ void usage()
     exit(1);
 }
 
+void set_args_structure(t_args *args)
+{
+    args->v_flag = false;
+    args->h_flag = false;
+    args->host = NULL;
+    args->num_packets = -1;
+    return args;
+}
 void parse_args(int argc, char *argv[], t_args *args)
 {
     if (argc < 2)
@@ -27,6 +35,7 @@ void parse_args(int argc, char *argv[], t_args *args)
         {
             usage();
         }
+
         else if (args->host == NULL)
         {
             if (argv[i][0] == '-')
