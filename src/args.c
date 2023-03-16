@@ -12,7 +12,6 @@ void set_args_structure(t_args *args)
     args->h_flag = false;
     args->host = NULL;
     args->num_packets = -1;
-    return args;
 }
 void parse_args(int argc, char *argv[], t_args *args)
 {
