@@ -64,32 +64,19 @@ ifeq ($(GEN), "Generation in mode")
 endif
 
 ################################################################################
-#                                DEFINES                                       #
-################################################################################
-
-LONG_BITS := $(shell getconf LONG_BIT)
-ifeq ($(LONG_BITS),32)
-# Define for 32bits
-CC				+= -D ARCH_32
-ASM_FLAG		:= -f elf32
-else
-ASM_FLAG		:= -f elf64
-endif
-
-CC				+= -D PAYLOAD_NAME_32=\"$(PAYLOAD_NAME_32)\"
-CC				+= -D PAYLOAD_NAME_64=\"$(PAYLOAD_NAME_64)\"
-
-
-################################################################################
 #                                     NAME                                     #
 ################################################################################
 
 SRC_NAME			:=	ft_ping.c							\
 						utils.c 							\
-						parse_args.c
+						args.c 								\
+						errors.c 							\
+						network.c
 
 
 INCLUDE_NAME		:=	ft_ping.h
+
+TESTS_SRC_NAME		:= 	./tests/test*.sh					\
 
 ################################################################################
 #                                     PATH                                     #
@@ -133,6 +120,12 @@ $(OBJ_PATH)%.o: $(SRC_PATH)%.c $(INCLUDE)
 	@echo "$(_END)$(_GREEN)[OK]\t$(_UNDER)$(_YELLOW)\t"	\
 		"COMPILE :$(_END)$(_BOLD)$(_WHITE)\t$<"
 
+tests: all
+	@echo "\n$(_CYAN)====================================================$(_END)"
+	@echo "$(_YELLOW)		LAUNCHING TESTS$(_END)"
+	@echo "$(_CYAN)====================================================$(_END)"
+	@for f in $(TESTS_SRC_NAME);  do sh $${f}; done;
+
 clean:
 	@rm -rf $(OBJ_PATH) 2> /dev/null || true
 	@echo "$(_YELLOW)Remove :\t$(_RED)" $(OBJ_PATH)"$(_END)"
@@ -154,6 +147,7 @@ help:
 	@echo "$(_YELLOW)   make all                            generates all binaries             "
 	@echo "$(_YELLOW)   make clean                          remove the generated files         "
 	@echo "$(_YELLOW)   make fclean                  		clean and remove binaries files    "
+	@echo "$(_YELLOW)   make tests                          launch tests scripts               "
 	@echo "$(_YELLOW)   make help                           prints this message                $(_END)"
 
 
@@ -165,7 +159,7 @@ $(ART_NAME):
 	@echo "             '\\_______          \`\\    \`.                   $(_GREEN)  __   ____ $(_CYAN)" >> $(ART_NAME)
 	@echo "                  \\____           \`\\   :                    $(_GREEN)/_ | | .-.\\ $(_CYAN)" >> $(ART_NAME)
 	@echo "    '._____         (____           \`\\.\`.             .--._ $(_GREEN)  \\\\' / $(_CYAN)" >> $(ART_NAME)
-	@echo "     \\____  \"'..____.(_______          \`~-.________.-'  $(_RED)@$(_CYAN). \\___${_GREEN}\\.'${_CYAN}___ " >> $(ART_NAME)
+	@echo "     \\____  \"'..____.(_______          \`~-.________.-'  $(_YELLOW)@$(_CYAN). \\___${_GREEN}\\.'${_CYAN}___ " >> $(ART_NAME)
 	@echo "     )___     ___                                         /___________\\ " >> $(ART_NAME)
 	@echo "      )___..''   '--.                    _.----------.____\`----$(_GREEN))'($(_CYAN)---' " >> $(ART_NAME)
 	@echo "                   _:-'   ,          _.-'                $(_GREEN)     /( \\\\ $(_CYAN)" >> $(ART_NAME)
