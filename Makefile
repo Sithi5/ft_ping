@@ -12,7 +12,7 @@ ART_NAME			=	bird
 #                                COMPILATION MODE                              #
 ################################################################################
 
-TEST				:=	yes
+TEST				:=	yes # Update the PROGRAM_NAME defined for test purposes
 WALL				:=	no
 WEXTRA				:=	no
 WSHADOW				:=	no

@@ -47,6 +47,7 @@ enum e_error
     ERROR_INET_PTON,
     ERROR_RESOLVING_HOST,
     ERROR_RECVFROM,
+    ERROR_SIGINT,
     NB_OF_ERROR_CODES /* Always keep last */
 };
 
@@ -99,6 +100,7 @@ typedef struct s_packet
 
 // errors
 void ft_perror(const char *message);
+void exit_clean(int sockfd, int status);
 
 // args
 void parse_args(int argc, char *argv[], t_args *args);

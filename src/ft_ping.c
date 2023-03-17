@@ -4,8 +4,7 @@ int sockfd = -1;
 
 void int_handler(int signo)
 {
-    close(sockfd);
-    exit(0);
+    exit_clean(sockfd, ERROR_SIGINT);
 }
 
 void send_ping(t_args *args, struct sockaddr *dest_addr, uint16_t sequence)
@@ -22,6 +21,10 @@ void send_ping(t_args *args, struct sockaddr *dest_addr, uint16_t sequence)
     icmp.sequence = sequence;
     gettimeofday(&icmp.timestamp, NULL);
 
+    char dest_ip[INET_ADDRSTRLEN];
+    inet_ntop(AF_INET, &(((struct sockaddr_in *)dest_addr)->sin_addr), dest_ip, INET_ADDRSTRLEN);
+    printf("Sending ping to %s\n", dest_ip);
+
     icmp.checksum = ft_icmp_checksum((char *)&icmp, packet_size);
 
     if (sendto(sockfd, &icmp, packet_size, MSG_DONTROUTE, dest_addr, sizeof(*dest_addr)) < 0)
@@ -33,7 +36,7 @@ void send_ping(t_args *args, struct sockaddr *dest_addr, uint16_t sequence)
         else
         {
             fprintf(stderr, "%s: sendto: %s\n", PROGRAM_NAME, strerror(errno));
-            exit(ERROR_SENDTO);
+            exit_clean(sockfd, ERROR_SENDTO);
         }
     }
 }
@@ -49,10 +52,10 @@ void receive_ping(t_args *args, t_packet_stats *packet_stats, t_packet *packet, 
     if (packet_stats->received_size < 0)
     {
         fprintf(stderr, "%s: recvmsg: %s\n", PROGRAM_NAME, strerror(errno));
-        exit(ERROR_RECVFROM);
+        exit_clean(sockfd, ERROR_RECVFROM);
     }
 
-    ft_memcpy(&icmp, packet, packet->packet_size);
+    ft_memcpy(&icmp, packet->msg.msg_iov->iov_base, packet->packet_size);
 
     // Check if the received packet is an ICMP echo reply packet
     if (icmp.type == ICMP_ECHOREPLY && icmp.id == (getpid() & 0xffff) && icmp.sequence == sequence)
@@ -64,7 +67,6 @@ void receive_ping(t_args *args, t_packet_stats *packet_stats, t_packet *packet, 
         // Extract the TTL value from the control msg header
         for (packet->cmsg = CMSG_FIRSTHDR(&(packet->msg)); packet->cmsg != NULL; packet->cmsg = CMSG_NXTHDR(&(packet->msg), packet->cmsg))
         {
-            printf("ici\n");
             if (packet->cmsg->cmsg_level == IPPROTO_IP && packet->cmsg->cmsg_type == IP_TTL)
             {
                 packet_stats->ttl = *(uint8_t *)CMSG_DATA(packet->cmsg);
@@ -85,7 +87,7 @@ void create_socket()
     if (sockfd < 0)
     {
         fprintf(stderr, "%s: socket error in main\n", PROGRAM_NAME);
-        exit(ERROR_SOCKET_OPEN);
+        exit_clean(sockfd, ERROR_SOCKET_OPEN);
     }
 }
 
@@ -118,6 +120,10 @@ int main(int argc, char *argv[])
     t_packet packet;
     struct hostent *he;
     struct in_addr ipv4_addr;
+    struct sockaddr_in dest_addr;
+
+    // The SIGINT signal is sent to a program when the user presses Ctrl+C, closing the program
+    signal(SIGINT, int_handler);
 
     create_socket();
     set_args_structure(&args);
@@ -132,25 +138,27 @@ int main(int argc, char *argv[])
         if (he == NULL)
         {
             fprintf(stderr, "%s: cannot resolve %s: Unknow host\n", PROGRAM_NAME, args.host);
-            exit(ERROR_RESOLVING_HOST);
+            exit_clean(sockfd, ERROR_RESOLVING_HOST);
         }
         ipv4_addr = *((struct in_addr *)(he->h_addr_list[0]));
     }
     else if (status < 0)
     { // Conversion error
         fprintf(stderr, "%s: inet_pton: %s\n", PROGRAM_NAME, strerror(errno));
-        exit(ERROR_INET_PTON);
+        exit_clean(sockfd, ERROR_INET_PTON);
     }
 
-    // // The SIGINT signal is sent to a program when the user presses Ctrl+C, closing the program
-    // signal(SIGINT, int_handler);
-
+    dest_addr.sin_family = AF_INET;
+    dest_addr.sin_port = 0; // Use default port
+    dest_addr.sin_addr = ipv4_addr;
     for (int i = 0; args.num_packets < 0 || i < args.num_packets; i++)
     {
-        printf("ici\n");
-        send_ping(&args, (struct sockaddr *)&ipv4_addr, i);
-        receive_ping(&args, &packet_stats, &packet, (struct sockaddr *)&ipv4_addr, i);
+        printf("Sending ping to %s...\n", inet_ntoa(dest_addr.sin_addr)); // DEBUG
+        send_ping(&args, (struct sockaddr *)&dest_addr, i);
+        receive_ping(&args, &packet_stats, &packet, (struct sockaddr *)&dest_addr, i);
         sleep(1);
     }
+
+    close(sockfd);
     return 0;
 }

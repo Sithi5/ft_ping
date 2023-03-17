@@ -44,8 +44,7 @@ struct hostent *ft_gethostbyname(const char *name)
     int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
     if (sockfd < 0)
     {
-        fprintf(stderr, "%s: socket error in ft_gethostname", PROGRAM_NAME);
-        exit(ERROR_SOCKET_OPEN);
+        return NULL;
     }
 
     // Set up hints for getaddrinfo
@@ -59,6 +58,7 @@ struct hostent *ft_gethostbyname(const char *name)
     int status = getaddrinfo(name, NULL, &hints, &result);
     if (status != 0)
     {
+        close(sockfd);
         return NULL;
     }
 
