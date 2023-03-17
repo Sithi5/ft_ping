@@ -7,11 +7,65 @@ void int_handler(int signo)
     exit_clean(sockfd, ERROR_SIGINT);
 }
 
-void send_ping(t_args *args, struct sockaddr *dest_addr, uint16_t sequence)
+void receive_ping(t_args *args, struct sockaddr *addr, uint16_t sequence)
 {
     t_icmp_header icmp;
-    int packet_size = sizeof(icmp);
+    t_packet_stats packet_stats;
+    struct msghdr msg;
+    struct cmsghdr *cmsg;
+    struct iovec iov;
+    char buffer[IP_MAXPACKET];
 
+    msg.msg_name = addr,
+    msg.msg_namelen = sizeof(*addr),
+    iov.iov_base = buffer;
+    iov.iov_len = sizeof(buffer);
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+
+    DEBUG ? printf("Waiting for received packets...\n") : 0;
+    packet_stats.received_size = recvmsg(sockfd, &(msg), 0);
+    if (packet_stats.received_size < 0)
+    {
+        fprintf(stderr, "%s: recvmsg: %s\n", PROGRAM_NAME, strerror(errno));
+        exit_clean(sockfd, ERROR_RECVFROM);
+    }
+    DEBUG ? printf("received packets...\n") : 0;
+
+    ft_memcpy(&icmp, msg.msg_iov->iov_base, sizeof(t_icmp_header));
+
+    // Check if the received packet is an ICMP echo reply packet and if it is the one we sent (by checking the ID and sequence number)
+    if (icmp.type == ICMP_ECHOREPLY && icmp.id == (getpid() & 0xffff) && icmp.sequence == sequence)
+    {
+        // Calculate the round-trip time (RTT) of the packet
+        gettimeofday(&(packet_stats.end_time), NULL);
+        packet_stats.rtt = ((double)(packet_stats.end_time.tv_sec - icmp.timestamp.tv_sec) * 1000.0) + ((double)(packet_stats.end_time.tv_usec - icmp.timestamp.tv_usec) / 1000.0);
+
+        // Extract the TTL value from the control msg header
+        for (cmsg = CMSG_FIRSTHDR(&(msg)); cmsg != NULL; cmsg = CMSG_NXTHDR(&(msg), cmsg))
+        {
+            if (cmsg->cmsg_level == IPPROTO_IP && cmsg->cmsg_type == IP_TTL)
+            {
+                packet_stats.ttl = *(uint8_t *)CMSG_DATA(cmsg);
+                break;
+            }
+        }
+
+        // Print the statistics of the received packet
+        printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", packet_stats.received_size, inet_ntoa(((struct sockaddr_in *)addr)->sin_addr), icmp.sequence, packet_stats.ttl, packet_stats.rtt);
+    }
+    else
+    {
+        DEBUG ? printf("Received packet: %s\n", buffer) : 0;
+        DEBUG ? printf("Received packet size: %d\n", packet_stats.received_size) : 0;
+        DEBUG ? printf("Received packet type: %d\n", icmp.type) : 0;
+    }
+}
+
+int send_ping(t_args *args, struct sockaddr_in server_addr, uint16_t sequence)
+{
+    t_icmp_header icmp;
+    int packet_size = sizeof(t_icmp_header);
     ft_bzero(&icmp, packet_size);
 
     icmp.type = ICMP_ECHO; // ICMP echo request
@@ -20,64 +74,14 @@ void send_ping(t_args *args, struct sockaddr *dest_addr, uint16_t sequence)
     icmp.id = getpid() & 0xffff;
     icmp.sequence = sequence;
     gettimeofday(&icmp.timestamp, NULL);
-
-    char dest_ip[INET_ADDRSTRLEN];
-    inet_ntop(AF_INET, &(((struct sockaddr_in *)dest_addr)->sin_addr), dest_ip, INET_ADDRSTRLEN);
-    printf("Sending ping to %s\n", dest_ip);
-
     icmp.checksum = ft_icmp_checksum((char *)&icmp, packet_size);
-
-    if (sendto(sockfd, &icmp, packet_size, MSG_DONTROUTE, dest_addr, sizeof(*dest_addr)) < 0)
+    int ret = sendto(sockfd, &icmp, packet_size, 0,
+                     (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (ret < 0)
     {
-        if (errno == EHOSTUNREACH || errno == ENETUNREACH)
-        {
-            fprintf(stderr, "%s: sendto: no route to host\n", PROGRAM_NAME);
-        }
-        else
-        {
-            fprintf(stderr, "%s: sendto: %s\n", PROGRAM_NAME, strerror(errno));
-            exit_clean(sockfd, ERROR_SENDTO);
-        }
+        fprintf(stderr, "%s: sendto: %s\n", PROGRAM_NAME, strerror(errno));
     }
-}
-
-void receive_ping(t_args *args, t_packet_stats *packet_stats, t_packet *packet, struct sockaddr *addr, uint16_t sequence)
-{
-    t_icmp_header icmp;
-
-    packet->msg.msg_name = addr,
-    packet->msg.msg_namelen = sizeof(*addr),
-
-    packet_stats->received_size = recvmsg(sockfd, &(packet->msg), 0);
-    if (packet_stats->received_size < 0)
-    {
-        fprintf(stderr, "%s: recvmsg: %s\n", PROGRAM_NAME, strerror(errno));
-        exit_clean(sockfd, ERROR_RECVFROM);
-    }
-
-    ft_memcpy(&icmp, packet->msg.msg_iov->iov_base, packet->packet_size);
-
-    // Check if the received packet is an ICMP echo reply packet
-    if (icmp.type == ICMP_ECHOREPLY && icmp.id == (getpid() & 0xffff) && icmp.sequence == sequence)
-    {
-        // Calculate the round-trip time (RTT) of the packet
-        gettimeofday(&(packet_stats->end_time), NULL);
-        packet_stats->rtt = ((double)(packet_stats->end_time.tv_sec - icmp.timestamp.tv_sec) * 1000.0) + ((double)(packet_stats->end_time.tv_usec - icmp.timestamp.tv_usec) / 1000.0);
-
-        // Extract the TTL value from the control msg header
-        for (packet->cmsg = CMSG_FIRSTHDR(&(packet->msg)); packet->cmsg != NULL; packet->cmsg = CMSG_NXTHDR(&(packet->msg), packet->cmsg))
-        {
-            if (packet->cmsg->cmsg_level == IPPROTO_IP && packet->cmsg->cmsg_type == IP_TTL)
-            {
-                packet_stats->ttl = *(uint8_t *)CMSG_DATA(packet->cmsg);
-                break;
-            }
-        }
-
-        // Print the statistics of the received packet
-        printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", packet_stats->received_size, inet_ntoa(((struct sockaddr_in *)addr)->sin_addr), icmp.sequence, packet_stats->ttl, packet_stats->rtt);
-        packet_stats->num_received++;
-    }
+    return 0;
 }
 
 void create_socket()
@@ -87,48 +91,22 @@ void create_socket()
     if (sockfd < 0)
     {
         fprintf(stderr, "%s: socket error in main\n", PROGRAM_NAME);
-        exit_clean(sockfd, ERROR_SOCKET_OPEN);
+        exit(ERROR_SOCKET_OPEN);
     }
-}
-
-void set_packet_stats_structure(t_packet_stats *packet_stats)
-{
-    packet_stats->num_received = 0;
-}
-
-void set_packet_structure(t_packet *packet)
-{
-    struct iovec iov;
-
-    char ancillary_buffer[MAX_PACKET_SIZE];
-
-    packet->packet_size = sizeof(t_icmp_header);
-    iov.iov_base = packet;
-    iov.iov_len = packet->packet_size;
-
-    packet->msg.msg_iov = &iov;
-    packet->msg.msg_iovlen = 1;
-    packet->msg.msg_control = ancillary_buffer;
-    packet->msg.msg_controllen = sizeof(ancillary_buffer);
 }
 
 int main(int argc, char *argv[])
 {
     int status;
     t_args args;
-    t_packet_stats packet_stats;
-    t_packet packet;
     struct hostent *he;
     struct in_addr ipv4_addr;
-    struct sockaddr_in dest_addr;
-
-    // The SIGINT signal is sent to a program when the user presses Ctrl+C, closing the program
-    signal(SIGINT, int_handler);
+    struct sockaddr_in server_addr;
 
     create_socket();
+    // The SIGINT signal is sent to a program when the user presses Ctrl+C, closing the program
+    signal(SIGINT, int_handler);
     set_args_structure(&args);
-    set_packet_stats_structure(&packet_stats);
-    set_packet_structure(&packet);
     parse_args(argc, argv, &args);
 
     status = inet_pton(AF_INET, args.host, &ipv4_addr);
@@ -148,14 +126,19 @@ int main(int argc, char *argv[])
         exit_clean(sockfd, ERROR_INET_PTON);
     }
 
-    dest_addr.sin_family = AF_INET;
-    dest_addr.sin_port = 0; // Use default port
-    dest_addr.sin_addr = ipv4_addr;
+    server_addr.sin_family = AF_INET;
+    server_addr.sin_port = 0; // Use default port
+    server_addr.sin_addr = ipv4_addr;
+
+    printf("PING %s (%s): %lu data bytes\n",
+           inet_ntoa(server_addr.sin_addr),
+           inet_ntoa(server_addr.sin_addr),
+           sizeof(t_icmp_header));
     for (int i = 0; args.num_packets < 0 || i < args.num_packets; i++)
     {
-        printf("Sending ping to %s...\n", inet_ntoa(dest_addr.sin_addr)); // DEBUG
-        send_ping(&args, (struct sockaddr *)&dest_addr, i);
-        receive_ping(&args, &packet_stats, &packet, (struct sockaddr *)&dest_addr, i);
+        DEBUG ? printf("\nSending ping to %s...\n", inet_ntoa(server_addr.sin_addr)) : 0;
+        send_ping(&args, server_addr, i);
+        receive_ping(&args, (struct sockaddr *)&server_addr, i);
         sleep(1);
     }
 

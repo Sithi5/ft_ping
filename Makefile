@@ -12,23 +12,23 @@ ART_NAME			=	bird
 #                                COMPILATION MODE                              #
 ################################################################################
 
-TEST				:=	yes # Update the PROGRAM_NAME defined for test purposes
+TEST				:=	yes
 WALL				:=	no
 WEXTRA				:=	no
 WSHADOW				:=	no
 WERROR				:=	no
 FSANITIZE			:=	no
-DEBUG				:=	no
+DEBUG				:=	yes
 O2					:=	no
 
-CC					:=	gcc
-AS					:= nasm
-GEN					:=	Generation in mode
+CC					:= gcc
+GEN					:= Generation in mode
 
 ifeq ($(TEST), yes)
-# Define for tests
-CC				:= $(CC) -D TEST
+	CC				+= -D TEST
+	GEN				+=	 test
 endif
+
 
 ifeq ($(WALL), yes)
 	CC				+=	-Wall
@@ -57,6 +57,7 @@ endif
 
 ifeq ($(DEBUG), yes)
 	CC				+=	-g
+	CC				+= -D DEBUG
 	GEN				+=	debug
 endif
 
@@ -65,7 +66,7 @@ ifeq ($(O2),yes)
 	GEN				+=	O2
 endif
 
-ifeq ($(GEN), "Generation in mode")
+ifeq ($(GEN), Generation in mode)
 	GEN				+=	no flags
 endif
 

@@ -21,13 +21,15 @@
 /****************************************************************************/
 
 #ifdef TEST
-
 #define PROGRAM_NAME "ping"
-
 #else
-
 #define PROGRAM_NAME "ft_ping"
+#endif
 
+#ifdef DEBUG
+#define DEBUG 1
+#else
+#define DEBUG 0
 #endif
 
 #define PACKET_SIZE 64
@@ -85,14 +87,6 @@ typedef struct s_packet_stats
     int received_size;
     struct timeval end_time;
 } t_packet_stats;
-
-typedef struct s_packet
-{
-    struct msghdr msg;
-    struct cmsghdr *cmsg;
-    char packet[MAX_PACKET_SIZE];
-    int packet_size;
-} t_packet;
 
 /****************************************************************************/
 /*                          FUNCTIONS DEFINITIONS                           */
