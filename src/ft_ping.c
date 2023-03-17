@@ -45,12 +45,7 @@ void receive_ping(t_args *args, struct sockaddr *addr, uint16_t sequence)
     msg.msg_iovlen = 1;
 
     DEBUG ? printf("Waiting for received packets...\n") : 0;
-    // packet_stats.received_size = recvmsg(sockfd, &(msg), 0);
-    while (packet_stats.received_size < 0 || icmp.type != ICMP_ECHOREPLY || icmp.id != (getpid() & 0xffff) || icmp.sequence != sequence)
-    {
-        packet_stats.received_size = recvmsg(sockfd, &(msg), 0);
-        ft_memcpy(&icmp, msg.msg_iov->iov_base, sizeof(t_icmp_header));
-    }
+    packet_stats.received_size = recvmsg(sockfd, &(msg), 0);
     if (packet_stats.received_size < 0)
     {
         fprintf(stderr, "%s: recvmsg: %s\n", PROGRAM_NAME, strerror(errno));
@@ -122,7 +117,7 @@ int main(int argc, char *argv[])
     status = inet_pton(AF_INET, args.host, &ipv4_addr);
     if (status == 0)
     { // Input is not an IPv4 address, try resolving as a domain name
-        he = ft_gethostbyname(args.host);
+        he = gethostbyname(args.host);
         if (he == NULL)
         {
             fprintf(stderr, "%s: cannot resolve %s: Unknow host\n", PROGRAM_NAME, args.host);
