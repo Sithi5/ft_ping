@@ -7,6 +7,27 @@ void int_handler(int signo)
     exit_clean(sockfd, ERROR_SIGINT);
 }
 
+int send_ping(t_args *args, struct sockaddr_in server_addr, uint16_t sequence)
+{
+    t_icmp_header icmp;
+    int packet_size = sizeof(t_icmp_header);
+    ft_bzero(&icmp, packet_size);
+
+    icmp.type = ICMP_ECHO; // ICMP echo request
+    icmp.code = 0;
+    icmp.id = getpid() & 0xffff;
+    icmp.sequence = sequence;
+    gettimeofday(&icmp.timestamp, NULL);
+    icmp.checksum = ft_icmp_checksum((char *)&icmp, packet_size);
+    int ret = sendto(sockfd, &icmp, packet_size, 0,
+                     (struct sockaddr *)&server_addr, sizeof(server_addr));
+    if (ret < 0)
+    {
+        fprintf(stderr, "%s: sendto: %s\n", PROGRAM_NAME, strerror(errno));
+    }
+    return 0;
+}
+
 void receive_ping(t_args *args, struct sockaddr *addr, uint16_t sequence)
 {
     t_icmp_header icmp;
@@ -24,7 +45,12 @@ void receive_ping(t_args *args, struct sockaddr *addr, uint16_t sequence)
     msg.msg_iovlen = 1;
 
     DEBUG ? printf("Waiting for received packets...\n") : 0;
-    packet_stats.received_size = recvmsg(sockfd, &(msg), 0);
+    // packet_stats.received_size = recvmsg(sockfd, &(msg), 0);
+    while (packet_stats.received_size < 0 || icmp.type != ICMP_ECHOREPLY || icmp.id != (getpid() & 0xffff) || icmp.sequence != sequence)
+    {
+        packet_stats.received_size = recvmsg(sockfd, &(msg), 0);
+        ft_memcpy(&icmp, msg.msg_iov->iov_base, sizeof(t_icmp_header));
+    }
     if (packet_stats.received_size < 0)
     {
         fprintf(stderr, "%s: recvmsg: %s\n", PROGRAM_NAME, strerror(errno));
@@ -62,28 +88,6 @@ void receive_ping(t_args *args, struct sockaddr *addr, uint16_t sequence)
     }
 }
 
-int send_ping(t_args *args, struct sockaddr_in server_addr, uint16_t sequence)
-{
-    t_icmp_header icmp;
-    int packet_size = sizeof(t_icmp_header);
-    ft_bzero(&icmp, packet_size);
-
-    icmp.type = ICMP_ECHO; // ICMP echo request
-    icmp.code = 0;
-    icmp.checksum = 0;
-    icmp.id = getpid() & 0xffff;
-    icmp.sequence = sequence;
-    gettimeofday(&icmp.timestamp, NULL);
-    icmp.checksum = ft_icmp_checksum((char *)&icmp, packet_size);
-    int ret = sendto(sockfd, &icmp, packet_size, 0,
-                     (struct sockaddr *)&server_addr, sizeof(server_addr));
-    if (ret < 0)
-    {
-        fprintf(stderr, "%s: sendto: %s\n", PROGRAM_NAME, strerror(errno));
-    }
-    return 0;
-}
-
 void create_socket()
 {
     // Create a raw socket with ICMP protocol, AF_INET is the address family for IPv4
@@ -92,6 +96,12 @@ void create_socket()
     {
         fprintf(stderr, "%s: socket: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPEN);
+    }
+    int optval = 1;
+    if (setsockopt(sockfd, IPPROTO_IP, IP_RECVERR, &optval, sizeof(optval)) < 0)
+    {
+        fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
+        exit(ERROR_SOCKET_OPTION);
     }
 }
 

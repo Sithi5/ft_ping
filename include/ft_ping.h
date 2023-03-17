@@ -11,7 +11,9 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/in.h>
 #include <sys/time.h>
+#include <sys/socket.h>
 #include <arpa/inet.h>
 #include <stdbool.h>
 #include <errno.h>
@@ -44,6 +46,7 @@
 enum e_error
 {
     ERROR_SOCKET_OPEN = 1,
+    ERROR_SOCKET_OPTION,
     ERROR_GET_HOST_BY_NAME_SOCKET_OPEN,
     ERROR_SENDTO,
     ERROR_INET_PTON,
