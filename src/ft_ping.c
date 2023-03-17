@@ -90,7 +90,7 @@ void create_socket()
     sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (sockfd < 0)
     {
-        fprintf(stderr, "%s: socket error in main\n", PROGRAM_NAME);
+        fprintf(stderr, "%s: socket: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPEN);
     }
 }
