@@ -55,3 +55,5 @@ bird
 ft_ping
 .vscode
 toignore
+ft_ping.log
+ping.log

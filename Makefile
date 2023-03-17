@@ -12,6 +12,7 @@ ART_NAME			=	bird
 #                                COMPILATION MODE                              #
 ################################################################################
 
+TEST				:=	yes
 WALL				:=	no
 WEXTRA				:=	no
 WSHADOW				:=	no
@@ -23,6 +24,11 @@ O2					:=	no
 CC					:=	gcc
 AS					:= nasm
 GEN					:=	Generation in mode
+
+ifeq ($(TEST), yes)
+# Define for tests
+CC				:= $(CC) -D TEST
+endif
 
 ifeq ($(WALL), yes)
 	CC				+=	-Wall
@@ -62,6 +68,8 @@ endif
 ifeq ($(GEN), "Generation in mode")
 	GEN				+=	no flags
 endif
+
+
 
 ################################################################################
 #                                     NAME                                     #

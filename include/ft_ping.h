@@ -1,6 +1,10 @@
 #ifndef PING_H
 #define PING_H
 
+/****************************************************************************/
+/*                          INCLUDES                                        */
+/****************************************************************************/
+
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
@@ -12,11 +16,43 @@
 #include <stdbool.h>
 #include <errno.h>
 
-#define PACKET_SIZE 64
-#define MAX_PACKET_SIZE 1024
+/****************************************************************************/
+/*                          DEFINES                                         */
+/****************************************************************************/
+
+#ifdef TEST
+
+#define PROGRAM_NAME "ping"
+
+#else
+
 #define PROGRAM_NAME "ft_ping"
 
+#endif
+
+#define PACKET_SIZE 64
+#define MAX_PACKET_SIZE 1024
 #define MAX_ADDRS 16
+
+/****************************************************************************/
+/*                           ENUM                                           */
+/****************************************************************************/
+
+/* Error codes */
+enum e_error
+{
+    ERROR_SOCKET_OPEN = 1,
+    ERROR_GET_HOST_BY_NAME_SOCKET_OPEN,
+    ERROR_SENDTO,
+    ERROR_INET_PTON,
+    ERROR_RESOLVING_HOST,
+    ERROR_RECVFROM,
+    NB_OF_ERROR_CODES /* Always keep last */
+};
+
+/****************************************************************************/
+/*                          STRUCTS                                         */
+/****************************************************************************/
 
 typedef struct s_struct
 {
@@ -57,17 +93,9 @@ typedef struct s_packet
     int packet_size;
 } t_packet;
 
-/* Error codes */
-enum e_error
-{
-    ERROR_SOCKET_OPEN = 1,
-    ERROR_GET_HOST_BY_NAME_SOCKET_OPEN,
-    ERROR_SENDTO,
-    ERROR_INET_PTON,
-    ERROR_RESOLVING_HOST,
-    ERROR_RECVFROM,
-    NB_OF_ERROR_CODES /* Always keep last */
-};
+/****************************************************************************/
+/*                          FUNCTIONS DEFINITIONS                           */
+/****************************************************************************/
 
 // errors
 void ft_perror(const char *message);
