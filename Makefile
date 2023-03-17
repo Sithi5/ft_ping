@@ -18,7 +18,7 @@ WEXTRA				:=	no
 WSHADOW				:=	no
 WERROR				:=	no
 FSANITIZE			:=	no
-DEBUG				:=	yes
+DEBUG				:=	no
 O2					:=	no
 
 CC					:= gcc
@@ -79,6 +79,8 @@ endif
 SRC_NAME			:=	ft_ping.c							\
 						utils.c 							\
 						args.c 								\
+						send_packages.c 					\
+						receive_packages.c 					\
 						errors.c 							\
 						network.c
 

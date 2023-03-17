@@ -61,19 +61,11 @@ enum e_error
 /*                          STRUCTS                                         */
 /****************************************************************************/
 
-typedef struct s_struct
+typedef struct s_packet
 {
-} t_s;
-
-typedef struct s_icmp_header
-{
-    uint8_t type;
-    uint8_t code;
-    uint16_t checksum;
-    uint16_t id;
-    uint16_t sequence;
-    struct timeval timestamp;
-} t_icmp_header;
+    struct ip ip;
+    struct icmp icmp;
+} t_packet;
 
 typedef struct s_args
 {
@@ -95,6 +87,12 @@ typedef struct s_packet_stats
 /****************************************************************************/
 /*                          FUNCTIONS DEFINITIONS                           */
 /****************************************************************************/
+
+// send_packages
+int send_ping(int sockfd, t_args *args, struct sockaddr_in server_addr, uint16_t sequence);
+
+// receive_packages
+void receive_ping(int sockfd, t_args *args, struct sockaddr *addr, uint16_t sequence);
 
 // errors
 void ft_perror(const char *message);
