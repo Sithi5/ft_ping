@@ -67,13 +67,9 @@ int main(int argc, char *argv[])
     server_addr.sin_port = 0; // Use default port
     server_addr.sin_addr = ipv4_addr;
 
-    printf("PING %s (%s): %lu data bytes\n",
-           inet_ntoa(server_addr.sin_addr),
-           inet_ntoa(server_addr.sin_addr),
-           sizeof(t_packet));
+    print_ping_address_infos(&args, &server_addr);
     for (int i = 0; args.num_packets < 0 || i < args.num_packets; i++)
     {
-        DEBUG ? printf("\nSending ping to %s...\n", inet_ntoa(server_addr.sin_addr)) : 0;
         send_ping(sockfd, &args, server_addr, i, &packets_stats);
         receive_ping(sockfd, &args, &packets_stats, (struct sockaddr *)&server_addr, i);
         sleep(1);

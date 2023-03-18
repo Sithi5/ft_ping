@@ -21,19 +21,21 @@ void update_packets_stats(t_packets_stats *packets_stats, int received_size, dou
     packets_stats->sum_squared_rtt += rtt * rtt;
 }
 
-void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockaddr *addr, struct ip *ip_header, t_packets_stats *packets_stats)
+void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockaddr *server_addr, struct ip *ip_header, t_packets_stats *packets_stats)
 {
-    // Calculate the round-trip time (RTT) of the packet
     struct timeval *sent_time = (struct timeval *)icmp.icmp_data;
     struct timeval end_time;
+    unsigned int ttl;
+    char ip_address[INET_ADDRSTRLEN];
+    double rtt;
+
     gettimeofday(&end_time, NULL);
-    double rtt = ((double)(end_time.tv_sec - sent_time->tv_sec) * 1000.0) + ((double)(end_time.tv_usec - sent_time->tv_usec) / 1000.0);
-
-    unsigned int ttl = ip_header->ip_ttl;
-
+    // Calculate the round-trip time (RTT) of the packet
+    rtt = ((double)(end_time.tv_sec - sent_time->tv_sec) * 1000.0) + ((double)(end_time.tv_usec - sent_time->tv_usec) / 1000.0);
+    ttl = ip_header->ip_ttl;
     update_packets_stats(packets_stats, received_size, rtt);
-
-    printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, inet_ntoa(((struct sockaddr_in *)addr)->sin_addr), icmp.icmp_seq, ttl, rtt);
+    inet_ntop(AF_INET, &(((struct sockaddr_in *)server_addr)->sin_addr), ip_address, INET_ADDRSTRLEN);
+    printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, ip_address, icmp.icmp_seq, ttl, rtt);
 }
 
 void receive_ping(int sockfd, t_args *args, t_packets_stats *packets_stats, struct sockaddr *addr, uint16_t sequence)

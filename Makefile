@@ -71,6 +71,7 @@ endif
 
 SRC_NAME			:=	ft_ping.c							\
 						utils.c 							\
+						prints.c 							\
 						args.c 								\
 						send_packages.c 					\
 						receive_packages.c 					\

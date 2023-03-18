@@ -88,6 +88,9 @@ typedef struct s_packets_stats
 /*                          FUNCTIONS DEFINITIONS                           */
 /****************************************************************************/
 
+// prints
+void print_ping_address_infos(t_args *args, struct sockaddr *server_addr);
+
 // stats
 void print_statistics(t_packets_stats *packets_stats, const char *hostname);
 void set_packets_stats(t_packets_stats *packets_stats);
