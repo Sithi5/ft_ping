@@ -19,8 +19,8 @@ void create_socket()
         exit(ERROR_SOCKET_OPEN);
     }
 
-    timeout.tv_sec = 1;  // 1 second
-    timeout.tv_usec = 0; // 0 microseconds
+    timeout.tv_sec = 0;       // 0 second
+    timeout.tv_usec = 100000; // 100000 microseconds
 
     if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
     {

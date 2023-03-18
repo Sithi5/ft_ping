@@ -60,7 +60,7 @@ void receive_ping(int sockfd, t_args *args, t_packets_stats *packets_stats, stru
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK) // Timeout occurred
         {
-            fprintf(stderr, "%s: recvmsg: Timeout\n", PROGRAM_NAME);
+            printf("Request timeout for icmp_seq %hu\n", sequence);
             return;
         }
         else
