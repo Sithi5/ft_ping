@@ -13,6 +13,7 @@ void set_args_structure(t_args *args)
     args->host = NULL;
     args->num_packets = -1;
 }
+
 void parse_args(int argc, char *argv[], t_args *args)
 {
     if (argc < 2)

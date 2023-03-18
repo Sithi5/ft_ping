@@ -11,6 +11,7 @@
 #include <unistd.h>
 #include <netdb.h>
 #include <netinet/ip_icmp.h>
+#include <netinet/icmp6.h>
 #include <netinet/in.h>
 #include <sys/time.h>
 #include <sys/socket.h>
@@ -18,16 +19,13 @@
 #include <stdbool.h>
 #include <errno.h>
 #include <signal.h>
+#include <float.h>
 
 /****************************************************************************/
 /*                          DEFINES                                         */
 /****************************************************************************/
 
-#ifdef TEST
-#define PROGRAM_NAME "ping"
-#else
 #define PROGRAM_NAME "ft_ping"
-#endif
 
 #ifdef DEBUG
 #define DEBUG 1
@@ -47,6 +45,7 @@
 enum e_error
 {
     ERROR_SOCKET_OPEN = 1,
+    ERROR_ARGS,
     ERROR_SOCKET_OPTION,
     ERROR_GET_HOST_BY_NAME_SOCKET_OPEN,
     ERROR_SENDTO,
@@ -75,24 +74,29 @@ typedef struct s_args
     char *host;
 } t_args;
 
-typedef struct s_packet_stats
+typedef struct s_packets_stats
 {
-    int num_received;
-    u_int8_t ttl;
-    double rtt;
-    int received_size;
-    struct timeval end_time;
-} t_packet_stats;
+    int transmitted;
+    int received;
+    double min_rtt;
+    double max_rtt;
+    double sum_rtt;
+    double sum_squared_rtt;
+} t_packets_stats;
 
 /****************************************************************************/
 /*                          FUNCTIONS DEFINITIONS                           */
 /****************************************************************************/
 
+// stats
+void print_statistics(t_packets_stats *packets_stats, const char *hostname);
+void set_packets_stats(t_packets_stats *packets_stats);
+
 // send_packages
-int send_ping(int sockfd, t_args *args, struct sockaddr_in server_addr, uint16_t sequence);
+int send_ping(int sockfd, t_args *args, struct sockaddr_in server_addr, uint16_t sequence, t_packets_stats *packets_stats);
 
 // receive_packages
-void receive_ping(int sockfd, t_args *args, struct sockaddr *addr, uint16_t sequence);
+void receive_ping(int sockfd, t_args *args, t_packets_stats *packets_stats, struct sockaddr *addr, uint16_t sequence);
 
 // errors
 void ft_perror(const char *message);
@@ -110,5 +114,11 @@ struct hostent *ft_gethostbyname(const char *name);
 void ft_bzero(void *s, size_t n);
 void *ft_memset(void *s, int c, size_t n);
 void *ft_memcpy(void *dest, const void *src, size_t n);
+double ft_sqrt(double num);
+double ft_fab(double num, int power);
+bool ft_isdigit(char c);
+int ft_isnumber(const char *str);
+int ft_atoi(const char *str);
+int ft_strcmp(const char *s1, const char *s2);
 
 #endif

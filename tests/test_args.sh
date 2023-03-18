@@ -59,3 +59,17 @@ echo "\n${_CYAN}ft_ping:${_END}\n"
 cat ft_ping.log
 
 rm ping.log ft_ping.log
+
+
+# Test -c with invalid number after
+echo "\n\n${_GREEN}Test -c with invalid number after :${_END}\n"
+
+ping  -c 8.8.8.8 8.8.8.8 > ping.log
+sudo ./ft_ping -c 8.8.8.8 8.8.8.8 > ft_ping.log
+
+echo "\n${_CYAN}ping:${_END}\n"
+cat ping.log
+echo "\n${_CYAN}ft_ping:${_END}\n"
+cat ft_ping.log
+
+rm ping.log ft_ping.log

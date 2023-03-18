@@ -1,13 +1,48 @@
 
 #include "ft_ping.h"
 
-void receive_ping(int sockfd, t_args *args, struct sockaddr *addr, uint16_t sequence)
+void update_packets_stats(t_packets_stats *packets_stats, int received_size, double rtt)
+{
+    packets_stats->received++;
+
+    // Update min_rtt
+    if (packets_stats->min_rtt > rtt)
+    {
+        packets_stats->min_rtt = rtt;
+    }
+
+    // Update max_rtt
+    if (packets_stats->max_rtt < rtt)
+    {
+        packets_stats->max_rtt = rtt;
+    }
+
+    packets_stats->sum_rtt += rtt;
+    packets_stats->sum_squared_rtt += rtt * rtt;
+}
+
+void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockaddr *addr, struct ip *ip_header, t_packets_stats *packets_stats)
+{
+    // Calculate the round-trip time (RTT) of the packet
+    struct timeval *sent_time = (struct timeval *)icmp.icmp_data;
+    struct timeval end_time;
+    gettimeofday(&end_time, NULL);
+    double rtt = ((double)(end_time.tv_sec - sent_time->tv_sec) * 1000.0) + ((double)(end_time.tv_usec - sent_time->tv_usec) / 1000.0);
+
+    unsigned int ttl = ip_header->ip_ttl;
+
+    update_packets_stats(packets_stats, received_size, rtt);
+
+    printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, inet_ntoa(((struct sockaddr_in *)addr)->sin_addr), icmp.icmp_seq, ttl, rtt);
+}
+
+void receive_ping(int sockfd, t_args *args, t_packets_stats *packets_stats, struct sockaddr *addr, uint16_t sequence)
 {
     struct icmp icmp;
-    t_packet_stats packet_stats;
     struct msghdr msg;
     struct iovec iov;
     char buffer[IP_MAXPACKET];
+    int received_size;
 
     msg.msg_name = addr,
     msg.msg_namelen = sizeof(*addr),
@@ -18,8 +53,8 @@ void receive_ping(int sockfd, t_args *args, struct sockaddr *addr, uint16_t sequ
 
     if (DEBUG)
         printf("Waiting for received packets...\n");
-    packet_stats.received_size = recvmsg(sockfd, &(msg), 0);
-    if (packet_stats.received_size < 0)
+    received_size = recvmsg(sockfd, &(msg), 0);
+    if (received_size < 0)
     {
         if (errno == EAGAIN || errno == EWOULDBLOCK) // Timeout occurred
         {
@@ -42,22 +77,14 @@ void receive_ping(int sockfd, t_args *args, struct sockaddr *addr, uint16_t sequ
     // Check if the received packet is an ICMP echo reply packet and if it is the one we sent (by checking the ID and sequence number)
     if (icmp.icmp_type == ICMP_ECHOREPLY && icmp.icmp_id == (getpid() & 0xffff) && icmp.icmp_seq == sequence)
     {
-        // Calculate the round-trip time (RTT) of the packet
-        struct timeval *sent_time = (struct timeval *)icmp.icmp_data;
-        gettimeofday(&(packet_stats.end_time), NULL);
-        packet_stats.rtt = ((double)(packet_stats.end_time.tv_sec - sent_time->tv_sec) * 1000.0) + ((double)(packet_stats.end_time.tv_usec - sent_time->tv_usec) / 1000.0);
-
-        packet_stats.ttl = ip_header->ip_ttl;
-
-        // Print the statistics of the received packet
-        printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", packet_stats.received_size, inet_ntoa(((struct sockaddr_in *)addr)->sin_addr), icmp.icmp_seq, packet_stats.ttl, packet_stats.rtt);
+        handle_ICMP_echo_package(received_size, icmp, addr, ip_header, packets_stats);
     }
     else
     {
         if (DEBUG)
         {
             printf("Received packet: %s\n", buffer);
-            printf("Received packet size: %d\n", packet_stats.received_size);
+            printf("Received packet size: %d\n", received_size);
             printf("Received packet type: %d\n", icmp.icmp_type);
         }
     }

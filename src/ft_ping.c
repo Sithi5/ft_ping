@@ -36,6 +36,9 @@ int main(int argc, char *argv[])
     struct hostent *he;
     struct in_addr ipv4_addr;
     struct sockaddr_in server_addr;
+    t_packets_stats packets_stats;
+
+    set_packets_stats(&packets_stats);
 
     create_socket();
     // The SIGINT signal is sent to a program when the user presses Ctrl+C, closing the program
@@ -70,12 +73,12 @@ int main(int argc, char *argv[])
            sizeof(t_packet));
     for (int i = 0; args.num_packets < 0 || i < args.num_packets; i++)
     {
-        if (DEBUG)
-            printf("\nSending ping to %s...\n", inet_ntoa(server_addr.sin_addr));
-        send_ping(sockfd, &args, server_addr, i);
-        receive_ping(sockfd, &args, (struct sockaddr *)&server_addr, i);
+        DEBUG ? printf("\nSending ping to %s...\n", inet_ntoa(server_addr.sin_addr)) : 0;
+        send_ping(sockfd, &args, server_addr, i, &packets_stats);
+        receive_ping(sockfd, &args, &packets_stats, (struct sockaddr *)&server_addr, i);
         sleep(1);
     }
+    print_statistics(&packets_stats, args.host);
 
     close(sockfd);
     return 0;
