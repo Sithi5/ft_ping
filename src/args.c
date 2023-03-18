@@ -2,7 +2,13 @@
 
 void usage()
 {
-    printf("usage: %s [-hv] [-c count] host\n", PROGRAM_NAME);
+    printf("Usage\n"
+           "  %s [options] <destination>\n\n"
+           "Options:\n"
+           "  <destination>      dns name or ip address\n"
+           "  -h                 show this help message and exit\n"
+           "  -c <count>         stop after <count> replies\n",
+           PROGRAM_NAME);
     exit(1);
 }
 
