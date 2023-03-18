@@ -108,8 +108,9 @@ extern g_ping ping;
 void print_ping_address_infos(struct sockaddr *server_addr);
 void print_statistics();
 
-// stats
-void set_packets_stats(t_packets_stats *packets_stats);
+// struct
+void set_packets_stats();
+void set_args_structure();
 
 // send_packages
 int send_ping(struct sockaddr_in server_addr, uint16_t sequence);
@@ -123,7 +124,6 @@ void exit_clean(int sockfd, int status);
 
 // args
 void parse_args(int argc, char *argv[]);
-void set_args_structure();
 
 // network
 unsigned short ft_icmp_checksum(void *data, int len);

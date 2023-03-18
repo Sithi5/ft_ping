@@ -41,8 +41,8 @@ unsigned short ft_icmp_checksum(void *data, int len)
 struct hostent *ft_gethostbyname(const char *name)
 {
     // Create a UDP socket
-    int sockfd_gethostbyname = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd_gethostbyname < 0)
+    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
+    if (sockfd < 0)
     {
         return NULL;
     }
@@ -58,7 +58,7 @@ struct hostent *ft_gethostbyname(const char *name)
     int status = getaddrinfo(name, NULL, &hints, &result);
     if (status != 0)
     {
-        close(sockfd_gethostbyname);
+        close(sockfd);
         return NULL;
     }
 
@@ -96,7 +96,7 @@ struct hostent *ft_gethostbyname(const char *name)
     he.h_addr_list[num_addrs] = NULL;
 
     // Close the socket
-    close(sockfd_gethostbyname);
+    close(sockfd);
 
     return &he;
 }

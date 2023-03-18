@@ -72,10 +72,10 @@ endif
 SRC_NAME			:=	ft_ping.c							\
 						utils.c 							\
 						prints.c 							\
+						struct.c 							\
 						args.c 								\
 						send_packages.c 					\
 						receive_packages.c 					\
-						packets_stats.c 					\
 						errors.c 							\
 						network.c
 

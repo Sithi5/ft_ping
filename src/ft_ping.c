@@ -4,7 +4,10 @@ g_ping ping;
 
 void int_handler(int signo)
 {
-    print_statistics();
+    if (ping.packets_stats.transmitted > 0)
+    {
+        print_statistics();
+    }
     exit_clean(ping.sockfd, ERROR_SIGINT);
 }
 
@@ -36,9 +39,8 @@ int main(int argc, char *argv[])
     struct hostent *he;
     struct in_addr ipv4_addr;
     struct sockaddr_in server_addr;
-    t_packets_stats packets_stats;
 
-    set_packets_stats(&packets_stats);
+    set_packets_stats();
 
     create_socket();
     // The SIGINT signal is sent to a program when the user presses Ctrl+C, closing the program

@@ -15,17 +15,6 @@ void usage()
     exit(1);
 }
 
-void set_args_structure()
-{
-    ping.args.v_flag = false;
-    ping.args.a_flag = false;
-    ping.args.h_flag = false;
-    ping.args.D_flag = false;
-    ping.args.interval = 1;
-    ping.args.host = NULL;
-    ping.args.num_packets = -1;
-}
-
 void parse_args(int argc, char *argv[])
 {
     if (argc < 2)
