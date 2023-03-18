@@ -12,7 +12,6 @@ ART_NAME			=	bird
 #                                COMPILATION MODE                              #
 ################################################################################
 
-TEST				:=	yes
 WALL				:=	no
 WEXTRA				:=	no
 WSHADOW				:=	no
@@ -23,12 +22,6 @@ O2					:=	no
 
 CC					:= gcc
 GEN					:= Generation in mode
-
-ifeq ($(TEST), yes)
-	CC				+= -D TEST
-	GEN				+=	 test
-endif
-
 
 ifeq ($(WALL), yes)
 	CC				+=	-Wall
@@ -81,6 +74,7 @@ SRC_NAME			:=	ft_ping.c							\
 						args.c 								\
 						send_packages.c 					\
 						receive_packages.c 					\
+						packets_stats.c 					\
 						errors.c 							\
 						network.c
 
