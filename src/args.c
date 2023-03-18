@@ -7,6 +7,7 @@ void usage()
            "Options:\n"
            "  <destination>      dns name or ip address\n"
            "  -h                 show this help message and exit\n"
+           "  -a                 use audible ping\n"
            "  -D                 print timestamps\n"
            "  -i <interval>      seconds between sending each packet\n"
            "  -c <count>         stop after <count> replies\n",
@@ -14,17 +15,18 @@ void usage()
     exit(1);
 }
 
-void set_args_structure(t_args *args)
+void set_args_structure()
 {
-    args->v_flag = false;
-    args->h_flag = false;
-    args->D_flag = false;
-    args->interval = 1;
-    args->host = NULL;
-    args->num_packets = -1;
+    ping.args.v_flag = false;
+    ping.args.a_flag = false;
+    ping.args.h_flag = false;
+    ping.args.D_flag = false;
+    ping.args.interval = 1;
+    ping.args.host = NULL;
+    ping.args.num_packets = -1;
 }
 
-void parse_args(int argc, char *argv[], t_args *args)
+void parse_args(int argc, char *argv[])
 {
     if (argc < 2)
     {
@@ -34,17 +36,21 @@ void parse_args(int argc, char *argv[], t_args *args)
     {
         if (ft_strcmp(argv[i], "-v") == 0)
         {
-            args->v_flag = 1;
+            ping.args.v_flag = true;
         }
         else if (ft_strcmp(argv[i], "-D") == 0)
         {
-            args->D_flag = 1;
+            ping.args.D_flag = true;
+        }
+        else if (ft_strcmp(argv[i], "-a") == 0)
+        {
+            ping.args.a_flag = true;
         }
         else if (ft_strcmp(argv[i], "-c") == 0 && i + 1 < argc)
         {
             if (i + 1 < argc && ft_isnumber(argv[i + 1]))
             {
-                args->num_packets = ft_atoi(argv[i + 1]);
+                ping.args.num_packets = ft_atoi(argv[i + 1]);
                 i++;
             }
             else
@@ -57,7 +63,7 @@ void parse_args(int argc, char *argv[], t_args *args)
         {
             if (i + 1 < argc && ft_isdouble(argv[i + 1]))
             {
-                args->interval = ft_str_to_double(argv[i + 1]);
+                ping.args.interval = ft_str_to_double(argv[i + 1]);
                 i++;
             }
             else
@@ -75,9 +81,9 @@ void parse_args(int argc, char *argv[], t_args *args)
             fprintf(stderr, "%s: Invalid option -- `%s`\n", PROGRAM_NAME, argv[i]);
             usage();
         }
-        else if (args->host == NULL)
+        else if (ping.args.host == NULL)
         {
-            args->host = argv[i];
+            ping.args.host = argv[i];
         }
         else
         {
@@ -85,7 +91,7 @@ void parse_args(int argc, char *argv[], t_args *args)
             usage();
         }
     }
-    if (args->host == NULL)
+    if (ping.args.host == NULL)
     {
         usage();
         exit(ERROR_ARGS);

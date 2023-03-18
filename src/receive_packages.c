@@ -36,6 +36,10 @@ void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockad
     update_packets_stats(rtt);
     inet_ntop(AF_INET, &(((struct sockaddr_in *)server_addr)->sin_addr), ip_address, INET_ADDRSTRLEN);
 
+    if (ping.args.a_flag)
+    {
+        printf("\a");
+    }
     if (ping.args.D_flag)
     {
         printf("[%ld.%06ld] ", (long)end_time.tv_sec, (long)end_time.tv_usec);

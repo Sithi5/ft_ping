@@ -70,6 +70,7 @@ typedef struct s_args
 {
     bool v_flag;
     bool h_flag;
+    bool a_flag;
     bool D_flag;
     double interval;
     int num_packets;
@@ -104,10 +105,10 @@ extern g_ping ping;
 /****************************************************************************/
 
 // prints
-void print_ping_address_infos(t_args *args, struct sockaddr *server_addr);
+void print_ping_address_infos(struct sockaddr *server_addr);
+void print_statistics();
 
 // stats
-void print_statistics(t_packets_stats *packets_stats, const char *hostname);
 void set_packets_stats(t_packets_stats *packets_stats);
 
 // send_packages
@@ -121,7 +122,7 @@ void ft_perror(const char *message);
 void exit_clean(int sockfd, int status);
 
 // args
-void parse_args(int argc, char *argv[], t_args *args);
+void parse_args(int argc, char *argv[]);
 void set_args_structure();
 
 // network

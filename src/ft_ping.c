@@ -4,6 +4,7 @@ g_ping ping;
 
 void int_handler(int signo)
 {
+    print_statistics();
     exit_clean(ping.sockfd, ERROR_SIGINT);
 }
 
@@ -32,7 +33,6 @@ void create_socket()
 int main(int argc, char *argv[])
 {
     int status;
-    t_args args;
     struct hostent *he;
     struct in_addr ipv4_addr;
     struct sockaddr_in server_addr;
@@ -43,16 +43,16 @@ int main(int argc, char *argv[])
     create_socket();
     // The SIGINT signal is sent to a program when the user presses Ctrl+C, closing the program
     signal(SIGINT, int_handler);
-    set_args_structure(&args);
-    parse_args(argc, argv, &args);
+    set_args_structure();
+    parse_args(argc, argv);
 
-    status = inet_pton(AF_INET, args.host, &ipv4_addr);
+    status = inet_pton(AF_INET, ping.args.host, &ipv4_addr);
     if (status == 0)
     { // Input is not an IPv4 address, try resolving as a domain name
-        he = gethostbyname(args.host);
+        he = gethostbyname(ping.args.host);
         if (he == NULL)
         {
-            fprintf(stderr, "%s: cannot resolve %s: Unknow host\n", PROGRAM_NAME, args.host);
+            fprintf(stderr, "%s: cannot resolve %s: Unknow host\n", PROGRAM_NAME, ping.args.host);
             exit_clean(ping.sockfd, ERROR_RESOLVING_HOST);
         }
         ipv4_addr = *((struct in_addr *)(he->h_addr_list[0]));
@@ -67,14 +67,14 @@ int main(int argc, char *argv[])
     server_addr.sin_port = 0; // Use default port
     server_addr.sin_addr = ipv4_addr;
 
-    print_ping_address_infos(&args, &server_addr);
-    for (int sequence = 0; args.num_packets < 0 || sequence < args.num_packets; sequence++)
+    print_ping_address_infos(&server_addr);
+    for (int sequence = 0; ping.args.num_packets < 0 || sequence < ping.args.num_packets; sequence++)
     {
         send_ping(server_addr, sequence);
-        receive_ping(ping.sockfd, &args, &packets_stats, (struct sockaddr *)&server_addr, sequence);
-        usleep((int)(args.interval * 1000000));
+        receive_ping((struct sockaddr *)&server_addr, sequence);
+        usleep((int)(ping.args.interval * 1000000));
     }
-    print_statistics(&packets_stats, args.host);
+    print_statistics();
 
     close(ping.sockfd);
     return 0;
