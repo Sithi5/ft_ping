@@ -86,6 +86,19 @@ typedef struct s_packets_stats
     double sum_squared_rtt;
 } t_packets_stats;
 
+typedef struct s_ping
+{
+    t_packets_stats packets_stats;
+    t_args args;
+    int sockfd;
+} g_ping;
+
+/****************************************************************************/
+/*                          GLOBALS                                         */
+/****************************************************************************/
+
+extern g_ping ping;
+
 /****************************************************************************/
 /*                          FUNCTIONS DEFINITIONS                           */
 /****************************************************************************/
@@ -98,10 +111,10 @@ void print_statistics(t_packets_stats *packets_stats, const char *hostname);
 void set_packets_stats(t_packets_stats *packets_stats);
 
 // send_packages
-int send_ping(int sockfd, t_args *args, struct sockaddr_in server_addr, uint16_t sequence, t_packets_stats *packets_stats);
+int send_ping(struct sockaddr_in server_addr, uint16_t sequence);
 
 // receive_packages
-void receive_ping(int sockfd, t_args *args, t_packets_stats *packets_stats, struct sockaddr *addr, uint16_t sequence);
+void receive_ping(struct sockaddr *addr, uint16_t sequence);
 
 // errors
 void ft_perror(const char *message);

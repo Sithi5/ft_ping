@@ -1,10 +1,10 @@
 #include "ft_ping.h"
 
-int sockfd = -1;
+g_ping ping;
 
 void int_handler(int signo)
 {
-    exit_clean(sockfd, ERROR_SIGINT);
+    exit_clean(ping.sockfd, ERROR_SIGINT);
 }
 
 void create_socket()
@@ -12,8 +12,8 @@ void create_socket()
     struct timeval timeout;
 
     // Create a raw socket with ICMP protocol, AF_INET is the address family for IPv4
-    sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (sockfd < 0)
+    ping.sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
+    if (ping.sockfd < 0)
     {
         fprintf(stderr, "%s: socket: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPEN);
@@ -22,7 +22,7 @@ void create_socket()
     timeout.tv_sec = 0;       // 0 second
     timeout.tv_usec = 100000; // 100000 microseconds
 
-    if (setsockopt(sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
+    if (setsockopt(ping.sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
     {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPTION);
@@ -53,14 +53,14 @@ int main(int argc, char *argv[])
         if (he == NULL)
         {
             fprintf(stderr, "%s: cannot resolve %s: Unknow host\n", PROGRAM_NAME, args.host);
-            exit_clean(sockfd, ERROR_RESOLVING_HOST);
+            exit_clean(ping.sockfd, ERROR_RESOLVING_HOST);
         }
         ipv4_addr = *((struct in_addr *)(he->h_addr_list[0]));
     }
     else if (status < 0)
     { // Conversion error
         fprintf(stderr, "%s: inet_pton: %s\n", PROGRAM_NAME, strerror(errno));
-        exit_clean(sockfd, ERROR_INET_PTON);
+        exit_clean(ping.sockfd, ERROR_INET_PTON);
     }
 
     server_addr.sin_family = AF_INET;
@@ -68,14 +68,14 @@ int main(int argc, char *argv[])
     server_addr.sin_addr = ipv4_addr;
 
     print_ping_address_infos(&args, &server_addr);
-    for (int i = 0; args.num_packets < 0 || i < args.num_packets; i++)
+    for (int sequence = 0; args.num_packets < 0 || sequence < args.num_packets; sequence++)
     {
-        send_ping(sockfd, &args, server_addr, i, &packets_stats);
-        receive_ping(sockfd, &args, &packets_stats, (struct sockaddr *)&server_addr, i);
+        send_ping(server_addr, sequence);
+        receive_ping(ping.sockfd, &args, &packets_stats, (struct sockaddr *)&server_addr, sequence);
         usleep((int)(args.interval * 1000000));
     }
     print_statistics(&packets_stats, args.host);
 
-    close(sockfd);
+    close(ping.sockfd);
     return 0;
 }
