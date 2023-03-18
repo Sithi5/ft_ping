@@ -120,3 +120,88 @@ int ft_strcmp(const char *s1, const char *s2)
         i++;
     return ((unsigned char)s1[i] - (unsigned char)s2[i]);
 }
+
+bool ft_isdouble(const char *str)
+{
+    bool has_decimal_point = false;
+    bool has_digits = false;
+
+    if (*str == '-' || *str == '+')
+    {
+        str++;
+    }
+
+    while (*str)
+    {
+        if (*str == '.')
+        {
+            if (has_decimal_point) // If a second decimal point is found, it's not a valid double
+            {
+                return false;
+            }
+            has_decimal_point = true;
+        }
+        else if (ft_isdigit(*str))
+        {
+            has_digits = true;
+        }
+        else
+        {
+            return false; // If a non-digit, non-decimal character is found, it's not a valid double
+        }
+
+        str++;
+    }
+
+    return has_digits; // Return true if the string contains at least one digit
+}
+
+double ft_str_to_double(const char *str)
+{
+    double result = 0.0;
+    double sign = 1.0;
+    double decimal_multiplier = 0.1;
+    bool is_decimal = false;
+
+    if (*str == '-')
+    {
+        sign = -1.0;
+        str++;
+    }
+    else if (*str == '+')
+    {
+        str++;
+    }
+
+    while (*str)
+    {
+        if (*str == '.')
+        {
+            if (is_decimal) // If a second decimal point is found, stop processing the string
+                break;
+
+            is_decimal = true;
+        }
+        else if (ft_isdigit(*str))
+        {
+            int digit = *str - '0';
+            if (is_decimal)
+            {
+                result += digit * decimal_multiplier;
+                decimal_multiplier *= 0.1;
+            }
+            else
+            {
+                result = result * 10.0 + digit;
+            }
+        }
+        else
+        {
+            break; // If a non-digit, non-decimal character is found, stop processing the string
+        }
+
+        str++;
+    }
+
+    return sign * result;
+}

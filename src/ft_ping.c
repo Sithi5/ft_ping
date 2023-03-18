@@ -72,7 +72,7 @@ int main(int argc, char *argv[])
     {
         send_ping(sockfd, &args, server_addr, i, &packets_stats);
         receive_ping(sockfd, &args, &packets_stats, (struct sockaddr *)&server_addr, i);
-        sleep(1);
+        usleep((int)(args.interval * 1000000));
     }
     print_statistics(&packets_stats, args.host);
 

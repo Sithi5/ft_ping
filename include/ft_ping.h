@@ -69,8 +69,9 @@ typedef struct s_packet
 typedef struct s_args
 {
     bool v_flag;
-    int num_packets;
     bool h_flag;
+    double interval;
+    int num_packets;
     char *host;
 } t_args;
 
@@ -123,5 +124,7 @@ bool ft_isdigit(char c);
 int ft_isnumber(const char *str);
 int ft_atoi(const char *str);
 int ft_strcmp(const char *s1, const char *s2);
+double ft_str_to_double(const char *str);
+bool ft_isdouble(const char *str);
 
 #endif
