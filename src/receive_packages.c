@@ -21,7 +21,7 @@ void update_packets_stats(t_packets_stats *packets_stats, int received_size, dou
     packets_stats->sum_squared_rtt += rtt * rtt;
 }
 
-void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockaddr *server_addr, struct ip *ip_header, t_packets_stats *packets_stats)
+void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockaddr *server_addr, struct ip *ip_header, t_packets_stats *packets_stats, t_args *args)
 {
     struct timeval *sent_time = (struct timeval *)icmp.icmp_data;
     struct timeval end_time;
@@ -35,6 +35,11 @@ void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockad
     ttl = ip_header->ip_ttl;
     update_packets_stats(packets_stats, received_size, rtt);
     inet_ntop(AF_INET, &(((struct sockaddr_in *)server_addr)->sin_addr), ip_address, INET_ADDRSTRLEN);
+
+    if (args->D_flag)
+    {
+        printf("[%ld.%06ld] ", (long)end_time.tv_sec, (long)end_time.tv_usec);
+    }
     printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, ip_address, icmp.icmp_seq, ttl, rtt);
 }
 
@@ -79,7 +84,7 @@ void receive_ping(int sockfd, t_args *args, t_packets_stats *packets_stats, stru
     // Check if the received packet is an ICMP echo reply packet and if it is the one we sent (by checking the ID and sequence number)
     if (icmp.icmp_type == ICMP_ECHOREPLY && icmp.icmp_id == (getpid() & 0xffff) && icmp.icmp_seq == sequence)
     {
-        handle_ICMP_echo_package(received_size, icmp, addr, ip_header, packets_stats);
+        handle_ICMP_echo_package(received_size, icmp, addr, ip_header, packets_stats, args);
     }
     else
     {

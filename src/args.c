@@ -7,7 +7,7 @@ void usage()
            "Options:\n"
            "  <destination>      dns name or ip address\n"
            "  -h                 show this help message and exit\n"
-           //    "  -D                 print timestamps\n"
+           "  -D                 print timestamps\n"
            "  -i <interval>      seconds between sending each packet\n"
            "  -c <count>         stop after <count> replies\n",
            PROGRAM_NAME);
@@ -18,6 +18,7 @@ void set_args_structure(t_args *args)
 {
     args->v_flag = false;
     args->h_flag = false;
+    args->D_flag = false;
     args->interval = 1;
     args->host = NULL;
     args->num_packets = -1;
@@ -34,6 +35,10 @@ void parse_args(int argc, char *argv[], t_args *args)
         if (ft_strcmp(argv[i], "-v") == 0)
         {
             args->v_flag = 1;
+        }
+        else if (ft_strcmp(argv[i], "-D") == 0)
+        {
+            args->D_flag = 1;
         }
         else if (ft_strcmp(argv[i], "-c") == 0 && i + 1 < argc)
         {
@@ -65,13 +70,13 @@ void parse_args(int argc, char *argv[], t_args *args)
         {
             usage();
         }
+        else if (argv[i][0] == '-')
+        {
+            fprintf(stderr, "%s: Invalid option -- `%s`\n", PROGRAM_NAME, argv[i]);
+            usage();
+        }
         else if (args->host == NULL)
         {
-            if (argv[i][0] == '-')
-            {
-                fprintf(stderr, "%s: Invalid option -- `%s`\n", PROGRAM_NAME, argv[i]);
-                usage();
-            }
             args->host = argv[i];
         }
         else

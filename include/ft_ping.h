@@ -70,6 +70,7 @@ typedef struct s_args
 {
     bool v_flag;
     bool h_flag;
+    bool D_flag;
     double interval;
     int num_packets;
     char *host;
