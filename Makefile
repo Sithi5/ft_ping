@@ -17,6 +17,7 @@ WEXTRA				:=	no
 WSHADOW				:=	no
 WERROR				:=	no
 FSANITIZE			:=	no
+PREPROCESSONLY		:=	no
 DEBUG				:=	no
 O2					:=	no
 
@@ -31,6 +32,11 @@ endif
 ifeq ($(WEXTRA), yes)
 	CC				+=	-Wextra
 	GEN				+=	extra
+endif
+
+ifeq ($(WEXTRA), yes)
+	CC				+=	-E
+	GEN				+=	preprocessonly
 endif
 
 ifeq ($(WSHADOW), yes)
