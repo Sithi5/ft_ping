@@ -65,6 +65,10 @@ The TTL value is used to prevent packets from circulating indefinitely in the ne
 
 the getaddrinfo function resolves an FQDN (Fully Qualified Domain Name) and returns the corresponding IP address(es) for that domain name. It works with both IPv4 and IPv6 addresses, and the results are returned in a linked list of addrinfo structures.
 
+## Bonus
+
+flags `-a` `-i` `-n` `-q` `-w`
+
 ## Resources
 
 [socket man](https://man7.org/linux/man-pages/man2/socket.2.html)
