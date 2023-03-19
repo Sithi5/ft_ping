@@ -116,6 +116,7 @@ void receive_ping(struct sockaddr *addr, int sequence) {
     struct msghdr msg;
     int received_size;
 
+    ft_bzero(&msg, sizeof(msg));
     iov.iov_base = buffer;
     iov.iov_len = sizeof(buffer);
     msg.msg_name = addr;
