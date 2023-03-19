@@ -15,6 +15,7 @@ void set_packets_stats() {
 void set_args_structure() {
     ping.args.v_flag = true;
     ping.args.a_flag = false;
+    ping.args.n_flag = false;
     ping.args.h_flag = false;
     ping.args.D_flag = false;
     ping.args.interval = 1;

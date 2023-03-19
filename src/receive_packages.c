@@ -20,27 +20,33 @@ static void update_packets_stats(double rtt) {
 
 static void handle_ICMP_echo_package(int received_size, struct icmp icmp,
                                      struct sockaddr *server_addr, struct ip *ip_header) {
-    struct timeval *sent_time = (struct timeval *) icmp.icmp_data;
+    struct timeval sent_time = *(struct timeval *) icmp.icmp_data;
     struct timeval end_time;
-    unsigned int ttl;
     char ip_address[INET_ADDRSTRLEN];
+    char *dns_name;
     double rtt;
 
     gettimeofday(&end_time, NULL);
-    // Calculate the round-trip time (RTT) of the packet
-    rtt = ((double) (end_time.tv_sec - sent_time->tv_sec) * 1000.0) +
-          ((double) (end_time.tv_usec - sent_time->tv_usec) / 1000.0);
-    ttl = ip_header->ip_ttl;
+    rtt = calculate_package_rtt(&sent_time, &end_time);
     update_packets_stats(rtt);
+
     inet_ntop(AF_INET, &(((struct sockaddr_in *) server_addr)->sin_addr), ip_address,
               INET_ADDRSTRLEN);
+
+    dns_name = ft_reverse_dns_lookup(server_addr, NI_MAXHOST);
+
     if (ping.args.v_flag && ping.args.q_flag == false) {
         if (ping.args.a_flag)
             printf("\a");
         if (ping.args.D_flag)
             printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
-        printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, ip_address,
-               icmp.icmp_seq, ttl, rtt);
+        if (ping.args.n_flag == false) {
+            printf("%d bytes from %s (%s): icmp_seq=%d ttl=%u time=%.1f ms\n", received_size,
+                   dns_name, ip_address, icmp.icmp_seq, ip_header->ip_ttl, rtt);
+        } else {
+            printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, ip_address,
+                   icmp.icmp_seq, ip_header->ip_ttl, rtt);
+        }
     }
 }
 
@@ -66,8 +72,8 @@ static void process_received_ping(int received_size, struct msghdr *msg, int seq
 
     ft_memcpy(&icmp, (char *) ip_header + ip_header_length, sizeof(struct icmp));
 
-    // Check if the received packet is an ICMP echo reply packet and if it is the one we sent (by
-    // checking the ID and sequence number)
+    // Check if the received packet is an ICMP echo reply packet and if it is the one we sent
+    // (by checking the ID and sequence number)
     if (icmp.icmp_type == ICMP_ECHOREPLY && icmp.icmp_id == (getpid() & 0xffff) &&
         icmp.icmp_seq == sequence) {
         handle_ICMP_echo_package(received_size, icmp, msg->msg_name, ip_header);

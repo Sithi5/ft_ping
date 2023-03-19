@@ -69,6 +69,7 @@ typedef struct s_packet {
 typedef struct s_args {
     bool q_flag;
     bool v_flag;
+    bool n_flag;
     bool h_flag;
     bool a_flag;
     bool D_flag;
@@ -126,6 +127,8 @@ void parse_args(int argc, char *argv[]);
 // network
 unsigned short ft_icmp_checksum(void *data, int len);
 struct sockaddr_in *ft_gethostbyname(const char *name, int num_addrs);
+double calculate_package_rtt(struct timeval *sent_time, struct timeval *end_time);
+char *ft_reverse_dns_lookup(struct sockaddr *server_addr, size_t dns_name_len);
 
 // utils
 void ft_bzero(void *s, size_t n);
