@@ -91,8 +91,8 @@ static void process_received_ping(int received_size, struct msghdr *msg, int seq
     struct ip *ip_header = (struct ip *) msg->msg_iov->iov_base;
     int ip_header_length = ip_header->ip_hl << 2;
 
+    ft_bzero(&icmp, sizeof(struct icmp));
     ft_memcpy(&icmp, (char *) ip_header + ip_header_length, sizeof(struct icmp));
-
     // Check if the received packet is an ICMP echo reply packet and if it is the one we sent
     // (by checking the ID and sequence number)
     if (icmp.icmp_type == ICMP_ECHOREPLY && icmp.icmp_id == (getpid() & 0xffff) &&
