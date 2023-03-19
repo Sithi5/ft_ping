@@ -98,7 +98,7 @@ static void process_received_ping(int received_size, struct msghdr *msg, int seq
     if (icmp.icmp_type == ICMP_ECHOREPLY && icmp.icmp_id == (getpid() & 0xffff) &&
         icmp.icmp_seq == sequence) {
         handle_ICMP_echo_package(received_size, icmp, msg->msg_name, ip_header);
-    } else if (icmp.icmp_type == ICMP_TIMXCEED && icmp.icmp_seq == sequence) {
+    } else if (icmp.icmp_type == ICMP_TIMXCEED) {
         handle_ttl_package(msg->msg_name, icmp);
     } else if (ping.args.v_flag) {
         // Print the packet if the verbose option is enabled (-v) and the packet is not an ICMP echo

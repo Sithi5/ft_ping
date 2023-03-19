@@ -21,7 +21,6 @@ static struct icmp create_icmp_header(int sequence) {
 int send_ping(struct sockaddr_in server_addr, int sequence) {
     struct icmp icmp;
 
-    printf("ping.args.ttl = %d\n", ping.args.ttl);
     icmp = create_icmp_header(sequence);
     int ret = sendto(ping.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr *) &server_addr,
                      sizeof(server_addr));
