@@ -10,11 +10,11 @@ void usage() {
            "  -D                 print timestamps\n"
            "  -h                 show this help message and exit\n"
            "  -i <interval>      seconds between sending each packet\n"
-           "  -n                 no dns name resolution"
-           "  -q                 quiet output"
-           "  -v                 verbose output"
-           "  -V                 print version and exit"
-           "  -w <deadline>      reply wait <deadline> in seconds",
+           "  -n                 no dns name resolution\n"
+           "  -q                 quiet output\n"
+           "  -v                 verbose output\n"
+           "  -V                 print version and exit\n"
+           "  -w <deadline>      reply wait <deadline> in seconds\n",
            PROGRAM_NAME);
     exit(1);
 }
