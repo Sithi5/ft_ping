@@ -12,10 +12,10 @@ ART_NAME			=	bird
 #                                COMPILATION MODE                              #
 ################################################################################
 
-WALL				:=	no
-WEXTRA				:=	no
-WSHADOW				:=	no
-WERROR				:=	no
+WALL				:=	yes
+WEXTRA				:=	yes
+WSHADOW				:=	yes
+WERROR				:=	yes
 FSANITIZE			:=	no
 DEBUG				:=	no
 O2					:=	no

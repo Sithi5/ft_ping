@@ -34,6 +34,10 @@ double ft_fabs(double num) { return num < 0 ? -num : num; }
  * @return: the square root of the number
  */
 double ft_sqrt(double num) {
+    double precision = 1e-10;   // Define the precision for the calculation
+    double guess = num;
+    double previous_guess = 0;
+
     if (num < 0) {
         return -1;   // Return -1 for negative input values
     }
@@ -41,10 +45,6 @@ double ft_sqrt(double num) {
     if (num == 0 || num == 1) {
         return num;   // Return the input value for 0 or 1
     }
-
-    double precision = 1e-10;   // Define the precision for the calculation
-    double guess = num;
-    double previous_guess;
 
     while (ft_fabs(guess - previous_guess) > precision) {
         previous_guess = guess;

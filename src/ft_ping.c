@@ -7,6 +7,7 @@ void int_handler(int signo) {
         print_statistics();
     }
     exit_clean(ping.sockfd, ERROR_SIGINT);
+    (void) signo;
 }
 
 void create_socket() {
@@ -29,7 +30,7 @@ void create_socket() {
     }
 }
 
-struct sockaddr_in resolve_server_addr(char *host) {
+struct sockaddr_in resolve_server_addr() {
     int status;
     struct sockaddr_in server_addr;
     struct sockaddr_in *server_addrs;
@@ -52,24 +53,18 @@ struct sockaddr_in resolve_server_addr(char *host) {
 
 int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr;
-    time_t start_time;
 
     set_args_structure();
-    parse_args(argc, argv);
     set_packets_stats();
+    parse_args(argc, argv);
     create_socket();
-    // The SIGINT signal is sent to a program when the user presses Ctrl+C,
-    // closing the program
     signal(SIGINT, int_handler);
-    server_addr = resolve_server_addr(ping.args.host);
+    server_addr = resolve_server_addr();
     print_ping_address_infos(&server_addr);
-    start_time = time(NULL);
+    alarm(ping.args.deadline);
     for (int sequence = 0; 1; sequence++) {
         send_ping(server_addr, sequence);
         receive_ping((struct sockaddr *) &server_addr, sequence);
-        if (ping.args.w_flag && (time(NULL) - start_time >= ping.args.deadline)) {
-            break;
-        }
         if (ping.args.num_packets > 0 &&
             (ping.args.num_packets == ping.packets_stats.transmitted)) {
             break;
