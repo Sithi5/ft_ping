@@ -5,21 +5,21 @@
 /*                          INCLUDES                                        */
 /****************************************************************************/
 
+#include <arpa/inet.h>
+#include <errno.h>
+#include <float.h>
+#include <netdb.h>
+#include <netinet/icmp6.h>
+#include <netinet/in.h>
+#include <netinet/ip_icmp.h>
+#include <signal.h>
+#include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <unistd.h>
-#include <netdb.h>
-#include <netinet/ip_icmp.h>
-#include <netinet/icmp6.h>
-#include <netinet/in.h>
-#include <sys/time.h>
 #include <sys/socket.h>
-#include <arpa/inet.h>
-#include <stdbool.h>
-#include <errno.h>
-#include <signal.h>
-#include <float.h>
+#include <sys/time.h>
+#include <unistd.h>
 
 /****************************************************************************/
 /*                          DEFINES                                         */
@@ -33,17 +33,16 @@
 #define DEBUG 0
 #endif
 
-#define PACKET_SIZE 64
+#define PACKET_SIZE     64
 #define MAX_PACKET_SIZE 1024
-#define MAX_ADDRS 16
+#define MAX_ADDRS       16
 
 /****************************************************************************/
 /*                           ENUM                                           */
 /****************************************************************************/
 
 /* Error codes */
-enum e_error
-{
+enum e_error {
     ERROR_SOCKET_OPEN = 1,
     ERROR_ARGS,
     ERROR_SOCKET_OPTION,
@@ -60,14 +59,12 @@ enum e_error
 /*                          STRUCTS                                         */
 /****************************************************************************/
 
-typedef struct s_packet
-{
+typedef struct s_packet {
     struct ip ip;
     struct icmp icmp;
 } t_packet;
 
-typedef struct s_args
-{
+typedef struct s_args {
     bool v_flag;
     bool h_flag;
     bool a_flag;
@@ -77,8 +74,7 @@ typedef struct s_args
     char *host;
 } t_args;
 
-typedef struct s_packets_stats
-{
+typedef struct s_packets_stats {
     int transmitted;
     int received;
     double min_rtt;
@@ -87,8 +83,7 @@ typedef struct s_packets_stats
     double sum_squared_rtt;
 } t_packets_stats;
 
-typedef struct s_ping
-{
+typedef struct s_ping {
     t_packets_stats packets_stats;
     t_args args;
     int sockfd;

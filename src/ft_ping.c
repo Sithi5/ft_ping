@@ -2,80 +2,71 @@
 
 g_ping ping;
 
-void int_handler(int signo)
-{
-    if (ping.packets_stats.transmitted > 0)
-    {
+void int_handler(int signo) {
+    if (ping.packets_stats.transmitted > 0) {
         print_statistics();
     }
     exit_clean(ping.sockfd, ERROR_SIGINT);
 }
 
-void create_socket()
-{
+void create_socket() {
     struct timeval timeout;
 
-    // Create a raw socket with ICMP protocol, AF_INET is the address family for IPv4
+    // Create a raw socket with ICMP protocol, AF_INET is the address family for
+    // IPv4
     ping.sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
-    if (ping.sockfd < 0)
-    {
+    if (ping.sockfd < 0) {
         fprintf(stderr, "%s: socket: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPEN);
     }
 
-    timeout.tv_sec = 0;       // 0 second
-    timeout.tv_usec = 100000; // 100000 microseconds
+    timeout.tv_sec = 0;         // 0 second
+    timeout.tv_usec = 100000;   // 100000 microseconds
 
-    if (setsockopt(ping.sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0)
-    {
+    if (setsockopt(ping.sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPTION);
     }
 }
 
-struct sockaddr_in resolve_server_addr(char *host)
-{
+struct sockaddr_in resolve_server_addr(char *host) {
     int status;
     struct sockaddr_in server_addr;
     struct sockaddr_in *server_addrs;
 
-    server_addr.sin_family = AF_INET; // IPv4
-    server_addr.sin_port = 0;         // Use default port
+    server_addr.sin_family = AF_INET;   // IPv4
+    server_addr.sin_port = 0;           // Use default port
     status = inet_pton(AF_INET, ping.args.host, &server_addr.sin_addr);
-    if (status == 0)
-    { // Input is not an IPv4 address, try resolving as a domain name
-        if (!(server_addrs = ft_gethostbyname(ping.args.host, 1)))
-        {
+    if (status == 0) {   // Input is not an IPv4 address, try resolving as a domain name
+        if (!(server_addrs = ft_gethostbyname(ping.args.host, 1))) {
             fprintf(stderr, "%s: cannot resolve %s: Unknow host\n", PROGRAM_NAME, ping.args.host);
             exit_clean(ping.sockfd, ERROR_RESOLVING_HOST);
         }
         server_addr.sin_addr = server_addrs[0].sin_addr;
-    }
-    else if (status < 0)
-    {
+    } else if (status < 0) {
         fprintf(stderr, "%s: inet_pton: %s\n", PROGRAM_NAME, strerror(errno));
         exit_clean(ping.sockfd, ERROR_INET_PTON);
     }
     return server_addr;
 }
 
-int main(int argc, char *argv[])
-{
+int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr;
 
     create_socket();
     set_packets_stats();
-    // The SIGINT signal is sent to a program when the user presses Ctrl+C, closing the program
+    // The SIGINT signal is sent to a program when the user presses Ctrl+C,
+    // closing the program
     signal(SIGINT, int_handler);
     set_args_structure();
     parse_args(argc, argv);
     server_addr = resolve_server_addr(ping.args.host);
     print_ping_address_infos(&server_addr);
-    for (int sequence = 0; ping.args.num_packets < 0 || sequence < ping.args.num_packets; sequence++)
-    {
+    for (int sequence = 0; ping.args.num_packets < 0 || sequence < ping.args.num_packets;
+         sequence++) {
         send_ping(server_addr, sequence);
-        receive_ping((struct sockaddr *)&server_addr, sequence);
-        usleep((int)(ping.args.interval * 1000000));
+        receive_ping((struct sockaddr *) &server_addr, sequence);
+        usleep((int) (ping.args.interval * 1000000));
     }
     print_statistics();
     close(ping.sockfd);
