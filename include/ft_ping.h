@@ -9,17 +9,13 @@
 #include <errno.h>
 #include <float.h>
 #include <netdb.h>
-#include <netinet/icmp6.h>
-#include <netinet/in.h>
 #include <netinet/ip_icmp.h>
 #include <signal.h>
 #include <stdbool.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <sys/socket.h>
 #include <sys/time.h>
-#include <time.h>
 #include <unistd.h>
 
 /****************************************************************************/
