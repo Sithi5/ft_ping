@@ -76,11 +76,15 @@ static int recv_ping_msg(struct msghdr *msg, int sequence) {
     if (received_size < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)   // Timeout occurred
         {
-            printf("Request timeout for icmp_seq %d\n", sequence);
+            if (ping.args.v_flag && ping.args.q_flag == false) {
+                printf("Request timeout for icmp_seq %d\n", sequence);
+            }
             return -1;
         } else {
-            fprintf(stderr, "%s: recvmsg: %s\n", PROGRAM_NAME, strerror(errno));
-            exit_clean(ping.sockfd, ERROR_RECVFROM);
+            if (ping.args.v_flag && ping.args.q_flag == false) {
+                fprintf(stderr, "%s: recvmsg: %s\n", PROGRAM_NAME, strerror(errno));
+            }
+            return -1;
         }
     }
     return received_size;
