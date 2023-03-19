@@ -59,6 +59,12 @@ The TTL (Time To Live) is a value in the IP (Internet Protocol) header of a pack
 
 The TTL value is used to prevent packets from circulating indefinitely in the network, and to ensure that packets are delivered efficiently and reliably to their destination. The typical TTL value for a packet is 64, but it can be adjusted based on the network topology and the characteristics of the traffic.
 
+## Usefull function
+
+### getaddrinfo
+
+the getaddrinfo function resolves an FQDN (Fully Qualified Domain Name) and returns the corresponding IP address(es) for that domain name. It works with both IPv4 and IPv6 addresses, and the results are returned in a linked list of addrinfo structures.
+
 ## Resources
 
 [socket man](https://man7.org/linux/man-pages/man2/socket.2.html)

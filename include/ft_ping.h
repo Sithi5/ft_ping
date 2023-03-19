@@ -105,7 +105,7 @@ extern g_ping ping;
 /****************************************************************************/
 
 // prints
-void print_ping_address_infos(struct sockaddr *server_addr);
+void print_ping_address_infos(struct sockaddr_in *server_addr);
 void print_statistics();
 
 // struct
@@ -127,7 +127,7 @@ void parse_args(int argc, char *argv[]);
 
 // network
 unsigned short ft_icmp_checksum(void *data, int len);
-struct hostent *ft_gethostbyname(const char *name);
+struct sockaddr_in *ft_gethostbyname(const char *name, int num_addrs);
 
 // utils
 void ft_bzero(void *s, size_t n);

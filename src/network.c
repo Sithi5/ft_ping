@@ -33,44 +33,34 @@ unsigned short ft_icmp_checksum(void *data, int len)
     return (uint16_t)(~sum);
 }
 
-/**
- * Function to resolve a hostname to an IP address
- * @param name The hostname to resolve
- * @return A pointer to a hostent struct containing the IP address
- */
-struct hostent *ft_gethostbyname(const char *name)
+struct sockaddr_in *ft_gethostbyname(const char *name, int num_addrs)
 {
-    // Create a UDP socket
-    int sockfd = socket(AF_INET, SOCK_DGRAM, 0);
-    if (sockfd < 0)
-    {
-        return NULL;
-    }
+    struct addrinfo hints;
+    struct addrinfo *result;
+    static struct sockaddr_in ipv4[MAX_ADDRS];
+    int status;
 
     // Set up hints for getaddrinfo
-    struct addrinfo hints;
-    ft_bzero(&hints, sizeof(hints));
+    memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;      // Allow IPv4 only
     hints.ai_socktype = SOCK_DGRAM; // Use datagram sockets
 
     // Call getaddrinfo to resolve the hostname
-    struct addrinfo *result;
-    int status = getaddrinfo(name, NULL, &hints, &result);
+    status = getaddrinfo(name, NULL, &hints, &result);
     if (status != 0)
     {
-        close(sockfd);
         return NULL;
     }
 
-    // Loop through the result list and store up to MAX_ADDRS addresses in a static array because we can't use malloc
-    static struct in_addr addr_list[MAX_ADDRS];
-    int num_addrs = 0;
+    // Initialize the number of addresses to 0
+    num_addrs = 0;
+
+    // Loop through the result list and store up to MAX_ADDRS addresses in the static array
     for (struct addrinfo *rp = result; rp != NULL && num_addrs < MAX_ADDRS; rp = rp->ai_next)
     {
         if (rp->ai_family == AF_INET)
         { // IPv4
-            struct sockaddr_in *ipv4 = (struct sockaddr_in *)rp->ai_addr;
-            memcpy(&addr_list[num_addrs], &(ipv4->sin_addr), sizeof(struct in_addr));
+            memcpy(&(ipv4[num_addrs]), rp->ai_addr, sizeof(struct sockaddr_in));
             num_addrs++;
         }
     }
@@ -78,25 +68,5 @@ struct hostent *ft_gethostbyname(const char *name)
     // Clean up the result list
     freeaddrinfo(result);
 
-    // Construct the hostent struct manually
-    static struct hostent he;
-    static char *aliases[] = {NULL};
-    static char addr_ptrs[MAX_ADDRS * sizeof(char *)];
-    static char addr_list_buf[MAX_ADDRS * sizeof(struct in_addr)];
-    he.h_name = (char *)name;
-    he.h_aliases = aliases;
-    he.h_addrtype = AF_INET;
-    he.h_length = sizeof(struct in_addr);
-    he.h_addr_list = (char **)addr_ptrs;
-    for (int i = 0; i < num_addrs; i++)
-    {
-        he.h_addr_list[i] = &addr_list_buf[i * sizeof(struct in_addr)];
-        memcpy(he.h_addr_list[i], &addr_list[i], sizeof(struct in_addr));
-    }
-    he.h_addr_list[num_addrs] = NULL;
-
-    // Close the socket
-    close(sockfd);
-
-    return &he;
+    return ipv4;
 }
