@@ -12,9 +12,9 @@ void usage() {
            "  -i <interval>      seconds between sending each packet\n"
            "  -n                 no dns name resolution"
            "  -q                 quiet output"
-           "  -t <ttl>           define time to live"
            "  -v                 verbose output"
-           "  -V                 print version and exit",
+           "  -V                 print version and exit"
+           "  -w <deadline>      reply wait <deadline> in seconds",
            PROGRAM_NAME);
     exit(1);
 }
@@ -52,24 +52,20 @@ void parse_args(int argc, char *argv[]) {
             ping.args.n_flag = true;
         } else if (ft_strcmp(argv[i], "-q") == 0) {
             ping.args.q_flag = true;
-        } else if (ft_strcmp(argv[i], "-t") == 0 && i + 1 < argc) {
-            if (i + 1 < argc && ft_isnumber(argv[i + 1])) {
-                ping.args.ttl = ft_atoi(argv[i + 1]);
-                if (ping.args.ttl < 0 || ping.args.ttl > 255) {
-                    fprintf(stderr, "%s: invalid argument: '%s': out of range 0 <= value <= 255\n",
-                            PROGRAM_NAME, argv[i + 1]);
-                    exit(ERROR_ARGS);
-                }
-                i++;
-            } else {
-                fprintf(stderr, "%s: invalid argument: '%s'\n", PROGRAM_NAME, argv[i + 1]);
-                exit(ERROR_ARGS);
-            }
         } else if (ft_strcmp(argv[i], "-v") == 0) {
             ping.args.v_flag = true;
         } else if (ft_strcmp(argv[i], "-V") == 0) {
             printf("%s by %s %s\n", PROGRAM_NAME, PROGRAM_AUTHOR, PROGRAM_VERSION);
             exit(ERROR_ARGS);
+        } else if (ft_strcmp(argv[i], "-w") == 0 && i + 1 < argc) {
+            if (i + 1 < argc && ft_isnumber(argv[i + 1])) {
+                ping.args.deadline = ft_atoi(argv[i + 1]);
+                ping.args.w_flag = true;
+                i++;
+            } else {
+                fprintf(stderr, "%s: invalid argument: '%s'\n", PROGRAM_NAME, argv[i + 1]);
+                exit(ERROR_ARGS);
+            }
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "%s: Invalid option -- `%s`\n", PROGRAM_NAME, argv[i]);
             usage();
