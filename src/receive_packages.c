@@ -124,7 +124,7 @@ void receive_ping(struct sockaddr *addr, int sequence) {
     msg.msg_iov = &iov;
     msg.msg_iovlen = 1;
 
-    received_size = recv_ping_msg(&msg, sequence);
-
-    process_received_ping(received_size, &msg, sequence);
+    if ((received_size = recv_ping_msg(&msg, sequence)) >= 0) {
+        process_received_ping(received_size, &msg, sequence);
+    }
 }
