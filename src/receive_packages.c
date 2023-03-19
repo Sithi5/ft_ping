@@ -42,19 +42,8 @@ void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockad
            icmp.icmp_seq, ttl, rtt);
 }
 
-void receive_ping(struct sockaddr *addr, uint16_t sequence) {
-    struct icmp icmp;
-    struct msghdr msg;
-    struct iovec iov;
-    char buffer[IP_MAXPACKET];
-    int received_size;
-
-    msg.msg_name = addr, msg.msg_namelen = sizeof(*addr), iov.iov_base = buffer;
-    iov.iov_len = sizeof(buffer);
-    msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
-
-    received_size = recvmsg(ping.sockfd, &(msg), 0);
+int recv_ping_msg(struct msghdr *msg, int sequence) {
+    int received_size = recvmsg(ping.sockfd, msg, 0);
     if (received_size < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)   // Timeout occurred
         {
@@ -65,19 +54,44 @@ void receive_ping(struct sockaddr *addr, uint16_t sequence) {
             exit_clean(ping.sockfd, ERROR_RECVFROM);
         }
     }
-    struct ip *ip_header = (struct ip *) msg.msg_iov->iov_base;
+    return received_size;
+}
+
+void process_received_ping(int received_size, struct msghdr *msg, uint16_t sequence) {
+    struct icmp icmp;
+    struct ip *ip_header = (struct ip *) msg->msg_iov->iov_base;
     int ip_header_length = ip_header->ip_hl << 2;
+
     ft_memcpy(&icmp, (char *) ip_header + ip_header_length, sizeof(struct icmp));
+
     // Check if the received packet is an ICMP echo reply packet and if it is the one we sent (by
     // checking the ID and sequence number)
     if (icmp.icmp_type == ICMP_ECHOREPLY && icmp.icmp_id == (getpid() & 0xffff) &&
         icmp.icmp_seq == sequence) {
-        handle_ICMP_echo_package(received_size, icmp, addr, ip_header);
+        handle_ICMP_echo_package(received_size, icmp, msg->msg_name, ip_header);
     } else if (ping.args.v_flag) {
         // Print the packet if the verbose option is enabled (-v) and the packet is not an ICMP echo
         // reply packet
-        printf("Received packet: %s\n", buffer);
+        printf("Received packet: %s\n", (char *) msg->msg_iov->iov_base);
         printf("Received packet size: %d\n", received_size);
         printf("Received packet type: %d\n", icmp.icmp_type);
     }
+}
+
+void receive_ping(struct sockaddr *addr, uint16_t sequence) {
+    char buffer[IP_MAXPACKET];
+    struct iovec iov;
+    struct msghdr msg;
+    int received_size;
+
+    iov.iov_base = buffer;
+    iov.iov_len = sizeof(buffer);
+    msg.msg_name = addr;
+    msg.msg_namelen = sizeof(*addr);
+    msg.msg_iov = &iov;
+    msg.msg_iovlen = 1;
+
+    received_size = recv_ping_msg(&msg, sequence);
+
+    process_received_ping(received_size, &msg, sequence);
 }
