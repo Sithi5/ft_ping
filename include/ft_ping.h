@@ -25,7 +25,9 @@
 /*                          DEFINES                                         */
 /****************************************************************************/
 
-#define PROGRAM_NAME "ft_ping"
+#define PROGRAM_NAME    "ft_ping"
+#define PROGRAM_VERSION "1.0.0"
+#define PROGRAM_AUTHOR  "mabouce"
 
 #ifdef DEBUG
 #define DEBUG 1
@@ -65,6 +67,7 @@ typedef struct s_packet {
 } t_packet;
 
 typedef struct s_args {
+    bool q_flag;
     bool v_flag;
     bool h_flag;
     bool a_flag;
@@ -108,10 +111,10 @@ void set_packets_stats();
 void set_args_structure();
 
 // send_packages
-int send_ping(struct sockaddr_in server_addr, uint16_t sequence);
+int send_ping(struct sockaddr_in server_addr, int sequence);
 
 // receive_packages
-void receive_ping(struct sockaddr *addr, uint16_t sequence);
+void receive_ping(struct sockaddr *addr, int sequence);
 
 // errors
 void ft_perror(const char *message);

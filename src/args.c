@@ -5,11 +5,13 @@ void usage() {
            "  %s [options] <destination>\n\n"
            "Options:\n"
            "  <destination>      dns name or ip address\n"
-           "  -h                 show this help message and exit\n"
            "  -a                 use audible ping\n"
+           "  -c <count>         stop after <count> replies\n"
            "  -D                 print timestamps\n"
+           "  -h                 show this help message and exit\n"
            "  -i <interval>      seconds between sending each packet\n"
-           "  -c <count>         stop after <count> replies\n",
+           "  -q                 quiet output"
+           "  -v                 verbose output",
            PROGRAM_NAME);
     exit(1);
 }
@@ -19,8 +21,8 @@ void parse_args(int argc, char *argv[]) {
         usage();
     }
     for (int i = 1; i < argc; i++) {
-        if (ft_strcmp(argv[i], "-v") == 0) {
-            ping.args.v_flag = true;
+        if (ft_strcmp(argv[i], "-q") == 0) {
+            ping.args.v_flag = false;
         } else if (ft_strcmp(argv[i], "-D") == 0) {
             ping.args.D_flag = true;
         } else if (ft_strcmp(argv[i], "-a") == 0) {
@@ -44,6 +46,9 @@ void parse_args(int argc, char *argv[]) {
             }
         } else if (ft_strcmp(argv[i], "-h") == 0) {
             usage();
+        } else if (ft_strcmp(argv[i], "-V") == 0) {
+            printf("%s by %s %s\n", PROGRAM_NAME, PROGRAM_AUTHOR, PROGRAM_VERSION);
+            exit(ERROR_ARGS);
         } else if (argv[i][0] == '-') {
             fprintf(stderr, "%s: Invalid option -- `%s`\n", PROGRAM_NAME, argv[i]);
             usage();

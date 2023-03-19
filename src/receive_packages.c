@@ -1,7 +1,7 @@
 
 #include "ft_ping.h"
 
-void update_packets_stats(double rtt) {
+static void update_packets_stats(double rtt) {
     ping.packets_stats.received++;
 
     // Update min_rtt
@@ -18,8 +18,8 @@ void update_packets_stats(double rtt) {
     ping.packets_stats.sum_squared_rtt += rtt * rtt;
 }
 
-void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockaddr *server_addr,
-                              struct ip *ip_header) {
+static void handle_ICMP_echo_package(int received_size, struct icmp icmp,
+                                     struct sockaddr *server_addr, struct ip *ip_header) {
     struct timeval *sent_time = (struct timeval *) icmp.icmp_data;
     struct timeval end_time;
     unsigned int ttl;
@@ -34,21 +34,23 @@ void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockad
     update_packets_stats(rtt);
     inet_ntop(AF_INET, &(((struct sockaddr_in *) server_addr)->sin_addr), ip_address,
               INET_ADDRSTRLEN);
-    if (ping.args.a_flag)
-        printf("\a");
-    if (ping.args.D_flag)
-        printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
-    printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, ip_address,
-           icmp.icmp_seq, ttl, rtt);
+    if (ping.args.v_flag && ping.args.q_flag == false) {
+        if (ping.args.a_flag)
+            printf("\a");
+        if (ping.args.D_flag)
+            printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
+        printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, ip_address,
+               icmp.icmp_seq, ttl, rtt);
+    }
 }
 
-int recv_ping_msg(struct msghdr *msg, int sequence) {
+static int recv_ping_msg(struct msghdr *msg, int sequence) {
     int received_size = recvmsg(ping.sockfd, msg, 0);
     if (received_size < 0) {
         if (errno == EAGAIN || errno == EWOULDBLOCK)   // Timeout occurred
         {
-            printf("Request timeout for icmp_seq %hu\n", sequence);
-            return;
+            printf("Request timeout for icmp_seq %d\n", sequence);
+            return -1;
         } else {
             fprintf(stderr, "%s: recvmsg: %s\n", PROGRAM_NAME, strerror(errno));
             exit_clean(ping.sockfd, ERROR_RECVFROM);
@@ -57,7 +59,7 @@ int recv_ping_msg(struct msghdr *msg, int sequence) {
     return received_size;
 }
 
-void process_received_ping(int received_size, struct msghdr *msg, uint16_t sequence) {
+static void process_received_ping(int received_size, struct msghdr *msg, int sequence) {
     struct icmp icmp;
     struct ip *ip_header = (struct ip *) msg->msg_iov->iov_base;
     int ip_header_length = ip_header->ip_hl << 2;
@@ -72,13 +74,14 @@ void process_received_ping(int received_size, struct msghdr *msg, uint16_t seque
     } else if (ping.args.v_flag) {
         // Print the packet if the verbose option is enabled (-v) and the packet is not an ICMP echo
         // reply packet
+        printf("Received packet for sequence %d is not an ICMP echo reply: \n", sequence);
         printf("Received packet: %s\n", (char *) msg->msg_iov->iov_base);
         printf("Received packet size: %d\n", received_size);
         printf("Received packet type: %d\n", icmp.icmp_type);
     }
 }
 
-void receive_ping(struct sockaddr *addr, uint16_t sequence) {
+void receive_ping(struct sockaddr *addr, int sequence) {
     char buffer[IP_MAXPACKET];
     struct iovec iov;
     struct msghdr msg;

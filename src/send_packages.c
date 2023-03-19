@@ -1,7 +1,7 @@
 
 #include "ft_ping.h"
 
-static struct icmp create_icmp_header(uint16_t sequence) {
+static struct icmp create_icmp_header(int sequence) {
     struct icmp icmp;
 
     ft_bzero(&icmp, sizeof(icmp));
@@ -18,7 +18,7 @@ static struct icmp create_icmp_header(uint16_t sequence) {
     return icmp;
 }
 
-int send_ping(struct sockaddr_in server_addr, uint16_t sequence) {
+int send_ping(struct sockaddr_in server_addr, int sequence) {
     int packet_size = sizeof(struct icmp);
     t_packet packet;
 
