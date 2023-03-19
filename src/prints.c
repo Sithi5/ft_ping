@@ -4,7 +4,8 @@ void print_ping_address_infos(struct sockaddr_in *server_addr) {
     char ip_address[INET_ADDRSTRLEN];
 
     inet_ntop(AF_INET, &(server_addr->sin_addr), ip_address, INET_ADDRSTRLEN);
-    printf("PING %s (%s): %lu data bytes\n", ping.args.host, ip_address, sizeof(t_packet));
+
+    printf("PING %s (%s): %lu data bytes\n", ping.args.host, ip_address, sizeof(struct icmp));
 }
 
 void print_statistics() {

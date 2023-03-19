@@ -27,6 +27,10 @@ void create_socket() {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPTION);
     }
+    if (setsockopt(ping.sockfd, IPPROTO_IP, IP_TTL, &ping.args.ttl, sizeof(ping.args.ttl)) < 0) {
+        fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
+        exit(ERROR_SOCKET_OPTION);
+    }
 }
 
 struct sockaddr_in resolve_server_addr(char *host) {
@@ -53,13 +57,13 @@ struct sockaddr_in resolve_server_addr(char *host) {
 int main(int argc, char *argv[]) {
     struct sockaddr_in server_addr;
 
-    create_socket();
+    set_args_structure();
+    parse_args(argc, argv);
     set_packets_stats();
+    create_socket();
     // The SIGINT signal is sent to a program when the user presses Ctrl+C,
     // closing the program
     signal(SIGINT, int_handler);
-    set_args_structure();
-    parse_args(argc, argv);
     server_addr = resolve_server_addr(ping.args.host);
     print_ping_address_infos(&server_addr);
     for (int sequence = 0; ping.args.num_packets < 0 || sequence < ping.args.num_packets;

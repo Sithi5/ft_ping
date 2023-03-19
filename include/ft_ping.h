@@ -38,6 +38,7 @@
 #define PACKET_SIZE     64
 #define MAX_PACKET_SIZE 1024
 #define MAX_ADDRS       16
+#define DEFAULT_TTL     64
 
 /****************************************************************************/
 /*                           ENUM                                           */
@@ -61,19 +62,16 @@ enum e_error {
 /*                          STRUCTS                                         */
 /****************************************************************************/
 
-typedef struct s_packet {
-    struct ip ip;
-    struct icmp icmp;
-} t_packet;
-
 typedef struct s_args {
-    bool q_flag;
-    bool v_flag;
-    bool n_flag;
-    bool h_flag;
     bool a_flag;
     bool D_flag;
+    bool h_flag;
+    bool i_flag;
+    bool n_flag;
+    bool q_flag;
+    bool v_flag;
     double interval;
+    int ttl;
     int num_packets;
     char *host;
 } t_args;

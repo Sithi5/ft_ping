@@ -38,14 +38,35 @@ static void handle_ICMP_echo_package(int received_size, struct icmp icmp,
     if (ping.args.v_flag && ping.args.q_flag == false) {
         if (ping.args.a_flag)
             printf("\a");
-        if (ping.args.D_flag)
-            printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
+        else {
+            if (ping.args.D_flag)
+                printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
+            if (ping.args.n_flag == false) {
+                printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size,
+                       dns_name, icmp.icmp_seq, ip_header->ip_ttl, rtt);
+            } else {
+                printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size,
+                       ip_address, icmp.icmp_seq, ip_header->ip_ttl, rtt);
+            }
+        }
+    }
+}
+
+static void handle_ttl_package(struct sockaddr *server_addr, struct icmp icmp) {
+    char ip_address[INET_ADDRSTRLEN];
+    char *dns_name;
+
+    inet_ntop(AF_INET, &(((struct sockaddr_in *) server_addr)->sin_addr), ip_address,
+              INET_ADDRSTRLEN);
+
+    dns_name = ft_reverse_dns_lookup(server_addr, NI_MAXHOST);
+
+    if (ping.args.v_flag && ping.args.q_flag == false) {
         if (ping.args.n_flag == false) {
-            printf("%d bytes from %s (%s): icmp_seq=%d ttl=%u time=%.1f ms\n", received_size,
-                   dns_name, ip_address, icmp.icmp_seq, ip_header->ip_ttl, rtt);
+            printf("From %s: icmp_seq=%d Time to live exceeded\n", dns_name, icmp.icmp_seq);
+
         } else {
-            printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, ip_address,
-                   icmp.icmp_seq, ip_header->ip_ttl, rtt);
+            printf("From %s: icmp_seq=%d Time to live exceeded\n", ip_address, icmp.icmp_seq);
         }
     }
 }
@@ -77,6 +98,8 @@ static void process_received_ping(int received_size, struct msghdr *msg, int seq
     if (icmp.icmp_type == ICMP_ECHOREPLY && icmp.icmp_id == (getpid() & 0xffff) &&
         icmp.icmp_seq == sequence) {
         handle_ICMP_echo_package(received_size, icmp, msg->msg_name, ip_header);
+    } else if (icmp.icmp_type == ICMP_TIMXCEED && icmp.icmp_seq == sequence) {
+        handle_ttl_package(msg->msg_name, icmp);
     } else if (ping.args.v_flag) {
         // Print the packet if the verbose option is enabled (-v) and the packet is not an ICMP echo
         // reply packet

@@ -19,16 +19,11 @@ static struct icmp create_icmp_header(int sequence) {
 }
 
 int send_ping(struct sockaddr_in server_addr, int sequence) {
-    int packet_size = sizeof(struct icmp);
-    t_packet packet;
+    struct icmp icmp;
 
-    ft_bzero(&packet, sizeof(t_packet));
-
-    packet.icmp = create_icmp_header(sequence);
-    // packet.ip = create_ip_header(server_addr);
-    if (DEBUG)
-        printf("packet_size: %d", packet_size);
-    int ret = sendto(ping.sockfd, &packet.icmp, packet_size, 0, (struct sockaddr *) &server_addr,
+    printf("ping.args.ttl = %d\n", ping.args.ttl);
+    icmp = create_icmp_header(sequence);
+    int ret = sendto(ping.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr *) &server_addr,
                      sizeof(server_addr));
     if (ret < 0) {
         fprintf(stderr, "%s: sendto: %s\n", PROGRAM_NAME, strerror(errno));

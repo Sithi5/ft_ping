@@ -12,6 +12,7 @@ void usage() {
            "  -i <interval>      seconds between sending each packet\n"
            "  -n                 no dns name resolution"
            "  -q                 quiet output"
+           "  -t <ttl>           define time to live"
            "  -v                 verbose output"
            "  -V                 print version and exit",
            PROGRAM_NAME);
@@ -30,7 +31,7 @@ void parse_args(int argc, char *argv[]) {
                 ping.args.num_packets = ft_atoi(argv[i + 1]);
                 i++;
             } else {
-                fprintf(stderr, "%s: invalid count of packets to transmit: `%s'\n", PROGRAM_NAME,
+                fprintf(stderr, "%s: invalid count of packets to transmit: '%s'\n", PROGRAM_NAME,
                         argv[i + 1]);
                 exit(ERROR_ARGS);
             }
@@ -40,6 +41,7 @@ void parse_args(int argc, char *argv[]) {
             usage();
         } else if (ft_strcmp(argv[i], "-i") == 0 && i + 1 < argc) {
             if (i + 1 < argc && ft_isdouble(argv[i + 1])) {
+                ping.args.i_flag = true;
                 ping.args.interval = ft_str_to_double(argv[i + 1]);
                 i++;
             } else {
@@ -50,6 +52,19 @@ void parse_args(int argc, char *argv[]) {
             ping.args.n_flag = true;
         } else if (ft_strcmp(argv[i], "-q") == 0) {
             ping.args.q_flag = true;
+        } else if (ft_strcmp(argv[i], "-t") == 0 && i + 1 < argc) {
+            if (i + 1 < argc && ft_isnumber(argv[i + 1])) {
+                ping.args.ttl = ft_atoi(argv[i + 1]);
+                if (ping.args.ttl < 0 || ping.args.ttl > 255) {
+                    fprintf(stderr, "%s: invalid argument: '%s': out of range 0 <= value <= 255\n",
+                            PROGRAM_NAME, argv[i + 1]);
+                    exit(ERROR_ARGS);
+                }
+                i++;
+            } else {
+                fprintf(stderr, "%s: invalid argument: '%s'\n", PROGRAM_NAME, argv[i + 1]);
+                exit(ERROR_ARGS);
+            }
         } else if (ft_strcmp(argv[i], "-v") == 0) {
             ping.args.v_flag = true;
         } else if (ft_strcmp(argv[i], "-V") == 0) {
