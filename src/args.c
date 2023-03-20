@@ -12,6 +12,7 @@ void usage() {
            "  -i <interval>      seconds between sending each packet\n"
            "  -n                 no dns name resolution\n"
            "  -q                 quiet output\n"
+           "  -t <ttl>           set the IP Time To Live\n"
            "  -v                 verbose output\n"
            "  -V                 print version and exit\n"
            "  -w <deadline>      reply wait <deadline> in seconds\n",
@@ -52,6 +53,14 @@ void parse_args(int argc, char *argv[]) {
             ping.args.n_flag = true;
         } else if (ft_strcmp(argv[i], "-q") == 0) {
             ping.args.q_flag = true;
+        } else if (ft_strcmp(argv[i], "-t") == 0 && i + 1 < argc) {
+            if (i + 1 < argc && ft_isnumber(argv[i + 1])) {
+                ping.args.ttl_value = ft_atoi(argv[i + 1]);
+                i++;
+            } else {
+                fprintf(stderr, "%s: invalid ttl: '%s'\n", PROGRAM_NAME, argv[i + 1]);
+                exit(ERROR_ARGS);
+            }
         } else if (ft_strcmp(argv[i], "-v") == 0) {
             ping.args.v_flag = true;
         } else if (ft_strcmp(argv[i], "-V") == 0) {
