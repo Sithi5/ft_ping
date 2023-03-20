@@ -114,19 +114,32 @@ static void process_received_ping(int received_size, struct msghdr *msg, int seq
     }
 }
 
+/*
+ * For some reason setting in receive_ping directly was not working, I guess it is because of static
+ * char or something like that.
+ */
+void set_msg_header(struct msghdr *msghdr, struct iovec *iov, char buffer[IP_MAXPACKET],
+                    struct sockaddr_in sockaddr) {
+    ft_bzero(msghdr, sizeof(struct msghdr));
+    msghdr->msg_name = &sockaddr;
+    msghdr->msg_namelen = sizeof(struct sockaddr_in);
+    msghdr->msg_iov = iov;
+    msghdr->msg_iovlen = 1;
+    msghdr->msg_control = buffer;
+    msghdr->msg_controllen = IP_MAXPACKET;
+    msghdr->msg_flags = 0;
+}
+
 void receive_ping(int sequence) {
     char buffer[IP_MAXPACKET];
     struct iovec iov;
     struct msghdr msg;
     int received_size;
 
-    ft_bzero(&msg, sizeof(msg));
     iov.iov_base = buffer;
     iov.iov_len = sizeof(buffer);
-    msg.msg_name = (struct sockaddr *) &ping.server_addr;
-    msg.msg_namelen = sizeof(*(struct sockaddr *) &ping.server_addr);
-    msg.msg_iov = &iov;
-    msg.msg_iovlen = 1;
+
+    set_msg_header(&msg, &iov, buffer, ping.server_addr);
 
     if ((received_size = recv_ping_msg(&msg, sequence)) >= 0) {
         process_received_ping(received_size, &msg, sequence);
