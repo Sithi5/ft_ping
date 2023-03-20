@@ -163,3 +163,14 @@ double ft_str_to_double(const char *str) {
 
     return sign * result;
 }
+
+void ft_hexdump(const void *data, size_t size) {
+    const unsigned char *p = (const unsigned char *) data;
+    for (size_t i = 0; i < size; i++) {
+        printf("%02x", p[i]);
+        if ((i + 1) % 2 == 0) {
+            printf(" ");
+        }
+    }
+    printf("\n");
+}

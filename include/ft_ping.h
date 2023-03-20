@@ -140,5 +140,6 @@ int ft_atoi(const char *str);
 int ft_strcmp(const char *s1, const char *s2);
 double ft_str_to_double(const char *str);
 bool ft_isdouble(const char *str);
+void ft_hexdump(const void *data, size_t size);
 
 #endif
