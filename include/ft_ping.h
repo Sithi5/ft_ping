@@ -87,6 +87,7 @@ typedef struct s_packets_stats {
 typedef struct s_ping {
     t_packets_stats packets_stats;
     t_args args;
+    struct sockaddr_in server_addr;
     int sockfd;
 } g_ping;
 
@@ -101,7 +102,7 @@ extern g_ping ping;
 /****************************************************************************/
 
 // prints
-void print_ping_address_infos(struct sockaddr_in *server_addr);
+void print_ping_address_infos();
 void print_statistics();
 
 // struct
@@ -109,10 +110,10 @@ void set_packets_stats();
 void set_args_structure();
 
 // send_packages
-int send_ping(struct sockaddr_in server_addr, int sequence);
+int send_ping(int sequence);
 
 // receive_packages
-void receive_ping(struct sockaddr *addr, int sequence);
+void receive_ping(int sequence);
 
 // errors
 void ft_perror(const char *message);

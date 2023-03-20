@@ -18,12 +18,12 @@ static struct icmp create_icmp_header(int sequence) {
     return icmp;
 }
 
-int send_ping(struct sockaddr_in server_addr, int sequence) {
+int send_ping(int sequence) {
     struct icmp icmp;
 
     icmp = create_icmp_header(sequence);
-    int ret = sendto(ping.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr *) &server_addr,
-                     sizeof(server_addr));
+    int ret = sendto(ping.sockfd, &icmp, sizeof(icmp), 0, (struct sockaddr *) &ping.server_addr,
+                     sizeof(ping.server_addr));
     if (ret < 0) {
         fprintf(stderr, "%s: sendto: %s\n", PROGRAM_NAME, strerror(errno));
     } else {

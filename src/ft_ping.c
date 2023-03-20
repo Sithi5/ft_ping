@@ -21,6 +21,10 @@ void create_socket() {
         exit(ERROR_SOCKET_OPEN);
     }
 
+    if (setsockopt(ping.sockfd, IPPROTO_IP, IP_TTL, (const void *) &ping.args.ttl_value,
+                   sizeof(ping.args.ttl_value)) == -1)
+        fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
+
     timeout.tv_sec = 0;         // 0 second
     timeout.tv_usec = 100000;   // 100000 microseconds
 
@@ -30,41 +34,38 @@ void create_socket() {
     }
 }
 
-struct sockaddr_in resolve_server_addr() {
+void resolve_server_addr() {
     int status;
-    struct sockaddr_in server_addr;
     struct sockaddr_in *server_addrs;
 
-    server_addr.sin_family = AF_INET;   // IPv4
-    server_addr.sin_port = 0;           // Use default port
-    status = inet_pton(AF_INET, ping.args.host, &server_addr.sin_addr);
+    ping.server_addr.sin_family = AF_INET;   // IPv4
+    ping.server_addr.sin_port = 0;           // Use default port
+    status = inet_pton(AF_INET, ping.args.host, &ping.server_addr.sin_addr);
     if (status == 0) {   // Input is not an IPv4 address, try resolving as a domain name
         if (!(server_addrs = ft_gethostbyname(ping.args.host, 1))) {
             fprintf(stderr, "%s: cannot resolve %s: Unknow host\n", PROGRAM_NAME, ping.args.host);
             exit_clean(ping.sockfd, ERROR_RESOLVING_HOST);
         }
-        server_addr.sin_addr = server_addrs[0].sin_addr;
+        ping.server_addr.sin_addr = server_addrs[0].sin_addr;   // Use first address
     } else if (status < 0) {
         fprintf(stderr, "%s: inet_pton: %s\n", PROGRAM_NAME, strerror(errno));
         exit_clean(ping.sockfd, ERROR_INET_PTON);
     }
-    return server_addr;
 }
 
 int main(int argc, char *argv[]) {
-    struct sockaddr_in server_addr;
 
     set_args_structure();
     set_packets_stats();
     parse_args(argc, argv);
     create_socket();
     signal(SIGINT, int_handler);
-    server_addr = resolve_server_addr();
-    print_ping_address_infos(&server_addr);
+    resolve_server_addr();
+    print_ping_address_infos();
     alarm(ping.args.deadline);
     for (int sequence = 0; 1; sequence++) {
-        send_ping(server_addr, sequence);
-        receive_ping((struct sockaddr *) &server_addr, sequence);
+        send_ping(sequence);
+        receive_ping(sequence);
         if (ping.args.num_packets > 0 &&
             (ping.args.num_packets == ping.packets_stats.transmitted)) {
             break;

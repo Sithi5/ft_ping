@@ -114,7 +114,7 @@ static void process_received_ping(int received_size, struct msghdr *msg, int seq
     }
 }
 
-void receive_ping(struct sockaddr *addr, int sequence) {
+void receive_ping(int sequence) {
     char buffer[IP_MAXPACKET];
     struct iovec iov;
     struct msghdr msg;
@@ -123,8 +123,8 @@ void receive_ping(struct sockaddr *addr, int sequence) {
     ft_bzero(&msg, sizeof(msg));
     iov.iov_base = buffer;
     iov.iov_len = sizeof(buffer);
-    msg.msg_name = addr;
-    msg.msg_namelen = sizeof(*addr);
+    msg.msg_name = (struct sockaddr *) &ping.server_addr;
+    msg.msg_namelen = sizeof(*(struct sockaddr *) &ping.server_addr);
     msg.msg_iov = &iov;
     msg.msg_iovlen = 1;
 
