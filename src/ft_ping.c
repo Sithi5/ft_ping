@@ -21,9 +21,8 @@ void create_socket() {
         exit(ERROR_SOCKET_OPEN);
     }
 
-    int on = 1;
-    /* Set socket options at ip to TTL and value to ttl_val */
-    if (setsockopt(ping.sockfd, IPPROTO_IP, IP_HDRINCL, (const char *) &on, sizeof(on)) < 0) {
+    if (setsockopt(ping.sockfd, IPPROTO_IP, IP_TTL, &ping.args.ttl_value,
+                   sizeof(ping.args.ttl_value)) < 0) {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPTION);
     }
