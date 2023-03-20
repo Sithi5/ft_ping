@@ -18,7 +18,7 @@ void set_args_structure() {
     ping.args.h_flag = false;
     ping.args.i_flag = false;
     ping.args.n_flag = false;
-    ping.args.v_flag = true;
+    ping.args.v_flag = false;
     ping.args.w_flag = false;
     ping.args.deadline = 0;
     ping.args.interval = 1;

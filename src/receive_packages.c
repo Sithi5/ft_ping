@@ -35,7 +35,7 @@ static void handle_ICMP_echo_package(int received_size, struct icmp icmp,
 
     dns_name = ft_reverse_dns_lookup(server_addr, NI_MAXHOST);
 
-    if (ping.args.v_flag && ping.args.q_flag == false) {
+    if (ping.args.q_flag == false) {
         if (ping.args.a_flag)
             printf("\a");
         else {
