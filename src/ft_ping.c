@@ -21,9 +21,12 @@ void create_socket() {
         exit(ERROR_SOCKET_OPEN);
     }
 
-    if (setsockopt(ping.sockfd, IPPROTO_IP, IP_TTL, (const void *) &ping.args.ttl_value,
-                   sizeof(ping.args.ttl_value)) == -1)
+    int on = 1;
+    /* Set socket options at ip to TTL and value to ttl_val */
+    if (setsockopt(ping.sockfd, IPPROTO_IP, IP_HDRINCL, (const char *) &on, sizeof(on)) < 0) {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
+        exit(ERROR_SOCKET_OPTION);
+    }
 
     timeout.tv_sec = 0;         // 0 second
     timeout.tv_usec = 100000;   // 100000 microseconds
