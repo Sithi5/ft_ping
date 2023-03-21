@@ -65,6 +65,7 @@ int main(int argc, char *argv[]) {
     resolve_server_addr();
     print_ping_address_infos();
     alarm(ping.args.deadline);
+    signal(SIGALRM, int_handler);
     for (int sequence = 0; 1; sequence++) {
         send_ping(sequence);
         receive_ping(sequence);
