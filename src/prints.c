@@ -19,7 +19,7 @@ void print_statistics() {
         (ping.packets_stats.sum_squared_rtt / ping.packets_stats.received) - (avg_rtt * avg_rtt);
     double stddev_rtt = ft_sqrt(variance);
 
-    printf("\n--- %s ping statistics ---\n", ping.args.host);
+    printf("--- %s ping statistics ---\n", ping.args.host);
 
     printf("%d packets transmitted, %d packets received, %.1f%% packet loss\n",
            ping.packets_stats.transmitted, ping.packets_stats.received,
