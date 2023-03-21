@@ -32,7 +32,6 @@
 #define DEBUG 0
 #endif
 
-#define PACKET_SIZE     64
 #define MAX_PACKET_SIZE 1024
 #define MAX_ADDRS       16
 #define DEFAULT_TTL     64
@@ -68,6 +67,7 @@ typedef struct s_args {
     bool q_flag;
     bool v_flag;
     bool w_flag;
+    int packets_size;
     int ttl_value;
     int deadline;
     double interval;
@@ -115,6 +115,12 @@ int send_ping(int sequence);
 // receive_packages
 void receive_ping(int sequence);
 
+// handle_packages
+void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockaddr *server_addr,
+                              struct ip *ip_header);
+void handle_ttl_package(int received_size, struct icmp icmp, struct sockaddr *server_addr,
+                        struct ip *ip_header, int sequence);
+
 // errors
 void ft_perror(const char *message);
 void exit_clean(int sockfd, int status);
@@ -141,5 +147,7 @@ int ft_strcmp(const char *s1, const char *s2);
 double ft_str_to_double(const char *str);
 bool ft_isdouble(const char *str);
 void ft_hexdump(const void *data, size_t size);
+uint16_t ft_ntohs(uint16_t n);
+int ft_strlen(const char *str);
 
 #endif

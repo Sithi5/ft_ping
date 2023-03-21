@@ -76,6 +76,7 @@ SRC_NAME			:=	ft_ping.c							\
 						args.c 								\
 						send_packages.c 					\
 						receive_packages.c 					\
+						handle_packages.c 					\
 						errors.c 							\
 						network.c
 

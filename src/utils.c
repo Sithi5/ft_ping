@@ -174,3 +174,18 @@ void ft_hexdump(const void *data, size_t size) {
     }
     printf("\n");
 }
+
+uint16_t ft_ntohs(uint16_t n) {
+    uint16_t result = 0;
+    result |= (n & 0xFF) << 8;
+    result |= (n & 0xFF00) >> 8;
+    return result;
+}
+
+int ft_strlen(const char *str) {
+    int i = 0;
+    while (str[i] != '\0') {
+        i++;
+    }
+    return i;
+}

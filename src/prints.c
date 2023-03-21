@@ -6,8 +6,8 @@ void print_ping_address_infos() {
     inet_ntop(AF_INET, &(ping.server_addr.sin_addr), ip_address, INET_ADDRSTRLEN);
 
     if (ping.args.v_flag) {
-        printf("PING %s (%s): %lu data bytes, id 0x%x\n", ping.args.host, ip_address,
-               sizeof(struct icmp), getpid() & 0xffff);
+        printf("PING %s (%s): %lu data bytes, id 0x%x = %d\n", ping.args.host, ip_address,
+               sizeof(struct icmp), getpid() & 0xffff, getpid() & 0xffff);
     } else {
         printf("PING %s (%s): %lu data bytes\n", ping.args.host, ip_address, sizeof(struct icmp));
     }

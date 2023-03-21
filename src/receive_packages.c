@@ -1,94 +1,6 @@
 
 #include "ft_ping.h"
 
-static void update_packets_stats(double rtt) {
-    ping.packets_stats.received++;
-
-    // Update min_rtt
-    if (ping.packets_stats.min_rtt > rtt) {
-        ping.packets_stats.min_rtt = rtt;
-    }
-
-    // Update max_rtt
-    if (ping.packets_stats.max_rtt < rtt) {
-        ping.packets_stats.max_rtt = rtt;
-    }
-
-    ping.packets_stats.sum_rtt += rtt;
-    ping.packets_stats.sum_squared_rtt += rtt * rtt;
-}
-
-static void handle_ICMP_echo_package(int received_size, struct icmp icmp,
-                                     struct sockaddr *server_addr, struct ip *ip_header) {
-    struct timeval sent_time = *(struct timeval *) icmp.icmp_data;
-    struct timeval end_time;
-    char ip_address[INET_ADDRSTRLEN];
-    char *dns_name;
-    double rtt;
-
-    gettimeofday(&end_time, NULL);
-    rtt = calculate_package_rtt(&sent_time, &end_time);
-    update_packets_stats(rtt);
-
-    inet_ntop(AF_INET, &(((struct sockaddr_in *) server_addr)->sin_addr), ip_address,
-              INET_ADDRSTRLEN);
-
-    dns_name = ft_reverse_dns_lookup(server_addr, NI_MAXHOST);
-
-    if (ping.args.q_flag == false) {
-        if (ping.args.a_flag)
-            printf("\a");
-        else {
-            if (ping.args.D_flag)
-                printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
-            if (ping.args.n_flag == false) {
-                printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size,
-                       dns_name, icmp.icmp_seq, ip_header->ip_ttl, rtt);
-            } else {
-                printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size,
-                       ip_address, icmp.icmp_seq, ip_header->ip_ttl, rtt);
-            }
-        }
-    }
-}
-
-static void handle_ttl_package(int received_size, struct sockaddr *server_addr, struct icmp icmp,
-                               struct ip *ip_header) {
-    char ip_address[INET_ADDRSTRLEN];
-    char *dns_name;
-    struct timeval sent_time = *(struct timeval *) icmp.icmp_data;
-    struct timeval end_time;
-
-    gettimeofday(&end_time, NULL);
-    inet_ntop(AF_INET, &(((struct sockaddr_in *) server_addr)->sin_addr), ip_address,
-              INET_ADDRSTRLEN);
-
-    dns_name = ft_reverse_dns_lookup(server_addr, NI_MAXHOST);
-
-    if (ping.args.q_flag == false) {
-        if (ping.args.a_flag)
-            printf("\a");
-        else {
-            if (ping.args.D_flag)
-                printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
-            if (ping.args.n_flag == false) {
-                printf("%d bytes from %s: ", received_size, dns_name);
-            } else {
-                printf("%d bytes from %s: ", received_size, ip_address);
-            }
-
-            printf("Time to live exceeded\n");
-
-            if (ping.args.v_flag) {
-                printf("IP Hdr Dump:\n");
-                ft_hexdump(ip_header, sizeof(struct ip));
-                printf("ICMP: type %d, code %d, size %ld, id 0x%x, seq 0x%x\n", icmp.icmp_type,
-                       icmp.icmp_code, sizeof(icmp), icmp.icmp_id, icmp.icmp_seq);
-            }
-        }
-    }
-}
-
 static int recv_ping_msg(struct msghdr *msg, int sequence) {
     int received_size = recvmsg(ping.sockfd, msg, 0);
     if (received_size < 0) {
@@ -119,7 +31,8 @@ static void process_received_ping(int received_size, struct msghdr *msg, int seq
         icmp.icmp_seq == sequence) {
         handle_ICMP_echo_package(received_size, icmp, msg->msg_name, ip_header);
     } else if (icmp.icmp_type == ICMP_TIMXCEED) {
-        handle_ttl_package(received_size, msg->msg_name, icmp, ip_header);
+        handle_ttl_package(received_size, icmp, msg->msg_name, ip_header, sequence);
+
     } else if (ping.args.v_flag) {
         printf("Received packet for sequence %d is not an ICMP echo reply: \n", sequence);
         printf("IP Hdr Dump:\n");
