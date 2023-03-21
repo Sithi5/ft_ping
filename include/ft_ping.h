@@ -106,6 +106,7 @@ extern g_ping ping;
 // prints
 void print_ping_address_infos();
 void print_statistics();
+void display_received_package_infos(struct ip *ip_header, int sequence);
 
 // struct
 void set_packets_stats();
@@ -120,8 +121,7 @@ void receive_ping(int sequence);
 // handle_packages
 void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockaddr *server_addr,
                               struct ip *ip_header);
-void handle_ttl_package(int received_size, struct icmp icmp, struct sockaddr *server_addr,
-                        struct ip *ip_header, int sequence);
+void handle_ttl_package(int received_size, struct sockaddr *server_addr);
 
 // errors
 void ft_perror(const char *message);

@@ -30,15 +30,13 @@ static void process_received_ping(int received_size, struct msghdr *msg, int seq
     if (icmp.icmp_type == ICMP_ECHOREPLY && icmp.icmp_id == (getpid() & 0xffff) &&
         icmp.icmp_seq == sequence) {
         handle_ICMP_echo_package(received_size, icmp, msg->msg_name, ip_header);
-    } else if (icmp.icmp_type == ICMP_TIMXCEED) {
-        handle_ttl_package(received_size, icmp, msg->msg_name, ip_header, sequence);
-
-    } else if (ping.args.v_flag) {
-        printf("Received packet for sequence %d is not an ICMP echo reply: \n", sequence);
-        printf("IP Hdr Dump:\n");
-        ft_hexdump(ip_header, sizeof(struct ip));
-        printf("ICMP: type %d, code %d, size %ld, id 0x%x, seq 0x%x\n", icmp.icmp_type,
-               icmp.icmp_code, sizeof(icmp), icmp.icmp_id, icmp.icmp_seq);
+    } else {
+        if (icmp.icmp_type == ICMP_TIMXCEED) {
+            handle_ttl_package(received_size, msg->msg_name);
+        }
+        if (ping.args.v_flag) {
+            display_received_package_infos(ip_header, sequence);
+        }
     }
 }
 

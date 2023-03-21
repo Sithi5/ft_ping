@@ -52,29 +52,7 @@ void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockad
     }
 }
 
-static void display_ttl_package_verbose(struct ip *ip_header, int sequence) {
-    char src_ip_address[INET_ADDRSTRLEN];
-    char dst_ip_address[INET_ADDRSTRLEN];
-
-    inet_ntop(AF_INET, &ip_header->ip_src, src_ip_address, INET_ADDRSTRLEN);
-    inet_ntop(AF_INET, &ping.server_addr.sin_addr.s_addr, dst_ip_address, INET_ADDRSTRLEN);
-
-    printf("IP Hdr Dump:\n ");
-    ft_hexdump(ip_header, sizeof(struct ip));
-
-    printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src\tDst\tData\n");
-    printf("%2d %2d %02x %04x %04x %2d %04x %3d %3d %04x %15s %15s\n", ip_header->ip_v,
-           ip_header->ip_hl * 4, ip_header->ip_tos, ft_ntohs(ip_header->ip_len),
-           ft_ntohs(ip_header->ip_id), (ft_ntohs(ip_header->ip_off) >> 13) & 0x7,
-           ft_ntohs(ip_header->ip_off) & 0x1FFF, ip_header->ip_ttl, ip_header->ip_p,
-           ft_ntohs(ip_header->ip_sum), src_ip_address, dst_ip_address);
-    //    Here we display the package sent, not the received one
-    printf("ICMP: type %d, code %d, size %ld, id 0x%x, seq 0x%x\n", ICMP_ECHO, ICMP_ECHOREPLY,
-           sizeof(struct icmp), getpid() & 0xffff, sequence);
-}
-
-void handle_ttl_package(int received_size, struct icmp icmp, struct sockaddr *server_addr,
-                        struct ip *ip_header, int sequence) {
+void handle_ttl_package(int received_size, struct sockaddr *server_addr) {
     char ip_address[INET_ADDRSTRLEN];
     char *dns_name;
     struct timeval end_time;
@@ -97,10 +75,6 @@ void handle_ttl_package(int received_size, struct icmp icmp, struct sockaddr *se
                 printf("%d bytes from %s: ", received_size, ip_address);
             }
             printf("Time to live exceeded\n");
-
-            if (ping.args.v_flag) {
-                display_ttl_package_verbose(ip_header, sequence);
-            }
         }
     }
 }
