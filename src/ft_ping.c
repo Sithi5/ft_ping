@@ -21,7 +21,7 @@ void create_socket() {
     if (setsockopt(ping.sockfd, IPPROTO_IP, IP_TTL, &ping.args.ttl_value,
                    sizeof(ping.args.ttl_value)) < 0) {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
-        exit(ERROR_SOCKET_OPTION);
+        exit_clean(ping.sockfd, ERROR_SOCKET_OPTION);
     }
     if (ping.args.W_flag) {
         timeout.tv_sec = ping.args.timeout;
@@ -32,7 +32,7 @@ void create_socket() {
     }
     if (setsockopt(ping.sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
-        exit(ERROR_SOCKET_OPTION);
+        exit_clean(ping.sockfd, ERROR_SOCKET_OPTION);
     }
 }
 
