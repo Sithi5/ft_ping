@@ -13,20 +13,16 @@ void int_handler(int signo) {
 void create_socket() {
     struct timeval timeout;
 
-    // Create a raw socket with ICMP protocol, AF_INET is the address family for
-    // IPv4
     ping.sockfd = socket(AF_INET, SOCK_RAW, IPPROTO_ICMP);
     if (ping.sockfd < 0) {
         fprintf(stderr, "%s: socket: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPEN);
     }
-
     if (setsockopt(ping.sockfd, IPPROTO_IP, IP_TTL, &ping.args.ttl_value,
                    sizeof(ping.args.ttl_value)) < 0) {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPTION);
     }
-
     if (ping.args.W_flag) {
         timeout.tv_sec = ping.args.timeout;
         timeout.tv_usec = 0;
@@ -34,7 +30,6 @@ void create_socket() {
         timeout.tv_sec = 0;
         timeout.tv_usec = 100000;   // 0.1 seconds
     }
-
     if (setsockopt(ping.sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));
         exit(ERROR_SOCKET_OPTION);
