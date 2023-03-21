@@ -63,7 +63,7 @@ struct sockaddr_in *ft_gethostbyname(const char *name, int num_addrs) {
     int status;
 
     // Set up hints for getaddrinfo
-    memset(&hints, 0, sizeof(hints));
+    ft_memset(&hints, 0, sizeof(hints));
     hints.ai_family = AF_INET;        // Allow IPv4 only
     hints.ai_socktype = SOCK_DGRAM;   // Use datagram sockets
 
