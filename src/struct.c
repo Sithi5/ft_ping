@@ -21,6 +21,8 @@ void set_args_structure() {
     ping.args.v_flag = false;
     ping.args.ttl_value = DEFAULT_TTL;
     ping.args.w_flag = false;
+    ping.args.W_flag = false;
+    ping.args.timeout = 0;
     ping.args.deadline = 0;
     ping.args.interval = 1;
     ping.args.host = NULL;

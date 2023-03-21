@@ -27,9 +27,13 @@ void create_socket() {
         exit(ERROR_SOCKET_OPTION);
     }
 
-    // Set timeout for receiving packets to wait indefinitely
-    timeout.tv_sec = 0;    // 0 seconds
-    timeout.tv_usec = 0;   // 0 microseconds
+    if (ping.args.W_flag) {
+        timeout.tv_sec = ping.args.timeout;
+        timeout.tv_usec = 0;
+    } else {
+        timeout.tv_sec = 0;
+        timeout.tv_usec = 500000;   // 0.5 seconds
+    }
 
     if (setsockopt(ping.sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
         fprintf(stderr, "%s: setsockopt: %s\n", PROGRAM_NAME, strerror(errno));

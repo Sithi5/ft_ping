@@ -67,6 +67,8 @@ typedef struct s_args {
     bool q_flag;
     bool v_flag;
     bool w_flag;
+    bool W_flag;
+    int timeout;
     int packets_size;
     int ttl_value;
     int deadline;

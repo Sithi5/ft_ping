@@ -15,7 +15,8 @@ void usage() {
            "  -t <ttl>           set the IP Time To Live\n"
            "  -v                 verbose output\n"
            "  -V                 print version and exit\n"
-           "  -w <deadline>      reply wait <deadline> in seconds\n",
+           "  -w <deadline>      reply wait <deadline> in seconds\n"
+           "  -W <timeout>       number of seconds to wait for response. By default 1\n",
            PROGRAM_NAME);
     exit(1);
 }
@@ -70,6 +71,15 @@ void parse_args(int argc, char *argv[]) {
             if (i + 1 < argc && ft_isnumber(argv[i + 1])) {
                 ping.args.deadline = ft_atoi(argv[i + 1]);
                 ping.args.w_flag = true;
+                i++;
+            } else {
+                fprintf(stderr, "%s: invalid argument: '%s'\n", PROGRAM_NAME, argv[i + 1]);
+                exit(ERROR_ARGS);
+            }
+        } else if (ft_strcmp(argv[i], "-W") == 0 && i + 1 < argc) {
+            if (i + 1 < argc && ft_isnumber(argv[i + 1])) {
+                ping.args.W_flag = true;
+                ping.args.timeout = ft_atoi(argv[i + 1]);
                 i++;
             } else {
                 fprintf(stderr, "%s: invalid argument: '%s'\n", PROGRAM_NAME, argv[i + 1]);
