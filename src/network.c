@@ -79,7 +79,7 @@ struct sockaddr_in *ft_gethostbyname(const char *name, int num_addrs) {
     // Loop through the result list and store up to MAX_ADDRS addresses in the static array
     for (struct addrinfo *rp = result; rp != NULL && num_addrs < MAX_ADDRS; rp = rp->ai_next) {
         if (rp->ai_family == AF_INET) {   // IPv4
-            memcpy(&(ipv4[num_addrs]), rp->ai_addr, sizeof(struct sockaddr_in));
+            ft_memcpy(&(ipv4[num_addrs]), rp->ai_addr, sizeof(struct sockaddr_in));
             num_addrs++;
         }
     }
