@@ -41,9 +41,21 @@ C compiler (tested with gcc)
 
 ## Options
 
--v: Enable verbose output.
-
--h: Display help message.
+| Option        | Description                                          |
+| ------------- | ---------------------------------------------------- |
+| <destination> | dns name or ip address                               |
+| -a            | use audible ping                                     |
+| -c <count>    | stop after <count> replies                           |
+| -D            | print timestamps                                     |
+| -h            | show this help message and exit                      |
+| -i <interval> | seconds between sending each packet                  |
+| -n            | no dns name resolution                               |
+| -q            | quiet output                                         |
+| --ttl <ttl>   | set the IP Time To Live                              |
+| -v            | verbose output                                       |
+| -V            | print version and exit                               |
+| -w <deadline> | reply wait <deadline> in seconds                     |
+| -W <timeout>  | number of seconds to wait for response. By default 1 |
 
 ## Usefull definition
 
@@ -65,9 +77,23 @@ The TTL value is used to prevent packets from circulating indefinitely in the ne
 
 the getaddrinfo function resolves an FQDN (Fully Qualified Domain Name) and returns the corresponding IP address(es) for that domain name. It works with both IPv4 and IPv6 addresses, and the results are returned in a linked list of addrinfo structures.
 
-## Bonus
+### inet_ntop
 
-flags `-a` `-i` `-n` `-q` `-w`
+The inet_ntop() function is used to convert a binary IP address representation in network byte order to a human-readable string representation in dotted-decimal notation.
+
+### inet_pton
+
+The inet_pton() function is used to convert a human-readable string representation of an IP address to its binary form in network byte order.
+
+### recvmsg
+
+The recvmsg() function is used to receive a message from a socket. It allows you to receive both the message data and ancillary data (such as control messages).
+
+The struct msghdr structure is used to describe a message that is sent or received using the sendmsg() or recvmsg() functions. It contains several fields that provide information about the message, including the source and destination addresses, the message data, and any ancillary data.
+
+The msg_iov field of the struct msghdr structure is a pointer to an array of struct iovec structures that describe the message data. Each struct iovec structure contains a pointer to a buffer and the length of the buffer.
+
+The struct iovec structure contains two fields: iov_base and iov_len. The iov_base field is a pointer to the buffer containing the data to be read or written, and iov_len is the size of the buffer in bytes.
 
 ## Resources
 
