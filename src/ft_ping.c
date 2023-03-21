@@ -32,7 +32,7 @@ void create_socket() {
         timeout.tv_usec = 0;
     } else {
         timeout.tv_sec = 0;
-        timeout.tv_usec = 500000;   // 0.5 seconds
+        timeout.tv_usec = 100000;   // 0.1 seconds
     }
 
     if (setsockopt(ping.sockfd, SOL_SOCKET, SO_RCVTIMEO, &timeout, sizeof(timeout)) < 0) {
