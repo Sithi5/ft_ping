@@ -36,17 +36,22 @@ void display_received_package_infos(struct ip *ip_header, int sequence) {
 
     inet_ntop(AF_INET, &ip_header->ip_src, src_ip_address, INET_ADDRSTRLEN);
     inet_ntop(AF_INET, &ping.server_addr.sin_addr.s_addr, dst_ip_address, INET_ADDRSTRLEN);
-
     printf("IP Hdr Dump:\n ");
     ft_hexdump(ip_header, sizeof(struct ip));
-
     printf("Vr HL TOS  Len   ID Flg  off TTL Pro  cks      Src\tDst\tData\n");
-    printf("%2d %2d %02x %04x %04x %2d %04x %3d %3d %04x %15s %15s\n", ip_header->ip_v,
-           ip_header->ip_hl * 4, ip_header->ip_tos, ft_ntohs(ip_header->ip_len),
-           ft_ntohs(ip_header->ip_id), (ft_ntohs(ip_header->ip_off) >> 13) & 0x7,
-           ft_ntohs(ip_header->ip_off) & 0x1FFF, ip_header->ip_ttl, ip_header->ip_p,
-           ft_ntohs(ip_header->ip_sum), src_ip_address, dst_ip_address);
-    //    Here we display the package sent, not the received one
+    printf("%2d ", ip_header->ip_v);                             // Vr
+    printf("%2d ", ip_header->ip_hl);                            // HL
+    printf("%02x ", ip_header->ip_tos);                          // TOS
+    printf("%04x ", ft_ntohs(ip_header->ip_len));                // Len
+    printf("%04x  ", ft_ntohs(ip_header->ip_id));                // ID
+    printf("%2d ", (ft_ntohs(ip_header->ip_off) >> 13) & 0x7);   // Flg
+    printf("%04x ", ft_ntohs(ip_header->ip_off) & 0x1FFF);       // off
+    printf("%3d ", ip_header->ip_ttl);                           // TTL
+    printf("%02d ", ip_header->ip_p);                            // Pro
+    printf("%04x ", ft_ntohs(ip_header->ip_sum));                // cks
+    printf("%s  ", src_ip_address);                              // Src
+    printf("%s ", dst_ip_address);                               // Dst
+    printf("\n");
     printf("ICMP: type %d, code %d, size %ld, id 0x%x, seq 0x%x\n", ICMP_ECHO, ICMP_ECHOREPLY,
            sizeof(struct icmp), getpid() & 0xffff, sequence);
 }
