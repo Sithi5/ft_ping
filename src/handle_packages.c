@@ -38,18 +38,17 @@ void handle_ICMP_echo_package(int received_size, struct icmp icmp, struct sockad
     if (ping.args.q_flag == false) {
         if (ping.args.a_flag)
             printf("\a");
-        else {
-            if (ping.args.D_flag)
-                printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
-            if (ping.args.n_flag == false) {
-                printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size,
-                       dns_name, icmp.icmp_seq, ip_header->ip_ttl, rtt);
-            } else {
-                printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size,
-                       ip_address, icmp.icmp_seq, ip_header->ip_ttl, rtt);
-            }
+        if (ping.args.D_flag)
+            printf("[%ld.%06ld] ", (long) end_time.tv_sec, (long) end_time.tv_usec);
+        if (ping.args.n_flag == false) {
+            printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, dns_name,
+                   icmp.icmp_seq, ip_header->ip_ttl, rtt);
+        } else {
+            printf("%d bytes from %s: icmp_seq=%d ttl=%u time=%.1f ms\n", received_size, ip_address,
+                   icmp.icmp_seq, ip_header->ip_ttl, rtt);
         }
     }
+}
 }
 
 void handle_ttl_package(int received_size, struct sockaddr *server_addr) {
